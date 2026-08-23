@@ -9,7 +9,16 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 
-from curren.models import HealthStatus, IngestResult, PublicationBatch, PublicSummary, Signal, SignalList, TrackRecord, VerificationRecord
+from curren.models import (
+    HealthStatus,
+    IngestResult,
+    PublicationBatch,
+    PublicSummary,
+    Signal,
+    SignalList,
+    TrackRecord,
+    VerificationRecord,
+)
 from curren.store import AccessPolicy, PublicationConflict, ReadStore, SignalNotFound
 
 _SYMBOL_RE = re.compile(r"^[A-Z0-9._-]{2,32}$")
