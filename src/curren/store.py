@@ -48,8 +48,8 @@ class ReadStore:
 
     The private signal runtime remains the source of truth. This store accepts
     only sanitized projections, locks the original trade-plan fields on first
-    publication, rejects stale per-signal projections, locks terminal outcomes,
-    and keeps lifecycle events append-only.
+    publication, rejects stale per-signal projections, locks terminal outcomes
+    and terminal result projections, and keeps lifecycle events append-only.
     """
 
     def __init__(self, path: str | Path, *, public_delay_seconds: int = 1800) -> None:
@@ -132,7 +132,6 @@ class ReadStore:
                     ON lifecycle_events(signal_id, event_at, id);
                 """
             )
-            # Additive migration for databases created before replay protection.
             _ensure_column(connection, "signals", "source", "TEXT")
             _ensure_column(connection, "signals", "source_generated_at", "TEXT")
 
@@ -217,13 +216,17 @@ class ReadStore:
         return SignalList(items=[self._signal_from_row(row, policy=policy) for row in rows], next_cursor=None)
 
     def recent_results(self, *, limit: int = 20, policy: AccessPolicy | None = None) -> SignalList:
+        """Return only terminal projections backed by an immutable outcome record."""
+
         policy = policy or AccessPolicy()
         with self._connect() as connection:
             rows = connection.execute(
                 """
-                SELECT * FROM signals
-                WHERE LOWER(status) IN ('closed', 'expired')
-                ORDER BY closed_at DESC, id DESC
+                SELECT s.*
+                FROM signals AS s
+                INNER JOIN outcome_records AS o ON o.signal_id = s.id
+                WHERE LOWER(s.status) IN ('closed', 'expired')
+                ORDER BY s.closed_at DESC, s.id DESC
                 LIMIT ?
                 """,
                 (limit,),
@@ -398,9 +401,6 @@ class ReadStore:
                 return False, True, 0, False
             if existing_signal["status"].lower() in TERMINAL_STATUSES and signal.status.value not in TERMINAL_STATUSES:
                 raise PublicationConflict(f"terminal signal cannot return to a live state for {signal.id}")
-            # Public availability is part of the first-publication schedule. A newer
-            # projection may update lifecycle/PnL state but cannot hide or accelerate
-            # an already-published signal by changing its public availability clock.
             public_available_at = _parse_time(existing_signal["public_available_at"])
 
         immutable_json = _canonical_snapshot(signal)
@@ -429,49 +429,61 @@ class ReadStore:
             sort_keys=True,
             separators=(",", ":"),
         )
-        values = (
-            signal.id,
-            source,
-            _iso(generated_at),
-            signal.symbol,
-            signal.side.value,
-            signal.status.value,
-            _iso(published_at),
-            _iso(public_available_at),
-            signal.entry,
-            signal.stop,
-            targets_json,
-            signal.mark,
-            signal.current_r,
-            signal.peak_r,
-            signal.realized_r,
-            _iso(_utc(signal.closed_at)) if signal.closed_at else None,
-            signal.exit_reason,
-            _iso(now),
-        )
-        connection.execute(
-            """
-            INSERT INTO signals (
-                id, source, source_generated_at, symbol, side, status,
-                published_at, public_available_at, entry, stop, targets_json,
-                mark, current_r, peak_r, realized_r, closed_at, exit_reason, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                source = COALESCE(signals.source, excluded.source),
-                source_generated_at = excluded.source_generated_at,
-                status = excluded.status,
-                public_available_at = excluded.public_available_at,
-                targets_json = excluded.targets_json,
-                mark = excluded.mark,
-                current_r = excluded.current_r,
-                peak_r = excluded.peak_r,
-                realized_r = excluded.realized_r,
-                closed_at = excluded.closed_at,
-                exit_reason = excluded.exit_reason,
-                updated_at = excluded.updated_at
-            """,
-            values,
-        )
+
+        terminal_locked = existing_signal is not None and existing_outcome is not None
+        if terminal_locked:
+            incoming_projection = _terminal_projection_snapshot(signal, targets_json=targets_json)
+            stored_projection = _terminal_projection_snapshot_from_row(existing_signal)
+            if incoming_projection != stored_projection:
+                raise PublicationConflict(f"immutable terminal projection changed for {signal.id}")
+            connection.execute(
+                "UPDATE signals SET source_generated_at = ?, updated_at = ? WHERE id = ?",
+                (_iso(generated_at), _iso(now), signal.id),
+            )
+        else:
+            values = (
+                signal.id,
+                source,
+                _iso(generated_at),
+                signal.symbol,
+                signal.side.value,
+                signal.status.value,
+                _iso(published_at),
+                _iso(public_available_at),
+                signal.entry,
+                signal.stop,
+                targets_json,
+                signal.mark,
+                signal.current_r,
+                signal.peak_r,
+                signal.realized_r,
+                _iso(_utc(signal.closed_at)) if signal.closed_at else None,
+                signal.exit_reason,
+                _iso(now),
+            )
+            connection.execute(
+                """
+                INSERT INTO signals (
+                    id, source, source_generated_at, symbol, side, status,
+                    published_at, public_available_at, entry, stop, targets_json,
+                    mark, current_r, peak_r, realized_r, closed_at, exit_reason, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    source = COALESCE(signals.source, excluded.source),
+                    source_generated_at = excluded.source_generated_at,
+                    status = excluded.status,
+                    public_available_at = excluded.public_available_at,
+                    targets_json = excluded.targets_json,
+                    mark = excluded.mark,
+                    current_r = excluded.current_r,
+                    peak_r = excluded.peak_r,
+                    realized_r = excluded.realized_r,
+                    closed_at = excluded.closed_at,
+                    exit_reason = excluded.exit_reason,
+                    updated_at = excluded.updated_at
+                """,
+                values,
+            )
 
         if existing_record is None:
             connection.execute(
@@ -604,6 +616,34 @@ def _canonical_outcome(signal: PublicationSignal) -> str:
         "closed_at": _iso(_utc(signal.closed_at)),
         "exit_reason": signal.exit_reason,
         "record_version": OUTCOME_RECORD_VERSION,
+    }
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _terminal_projection_snapshot(signal: PublicationSignal, *, targets_json: str) -> str:
+    payload = {
+        "status": signal.status.value,
+        "targets": json.loads(targets_json),
+        "mark": signal.mark,
+        "current_r": signal.current_r,
+        "peak_r": signal.peak_r,
+        "realized_r": signal.realized_r,
+        "closed_at": _iso(_utc(signal.closed_at)) if signal.closed_at else None,
+        "exit_reason": signal.exit_reason,
+    }
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _terminal_projection_snapshot_from_row(row: sqlite3.Row) -> str:
+    payload = {
+        "status": row["status"],
+        "targets": json.loads(row["targets_json"] or "[]"),
+        "mark": row["mark"],
+        "current_r": row["current_r"],
+        "peak_r": row["peak_r"],
+        "realized_r": row["realized_r"],
+        "closed_at": row["closed_at"],
+        "exit_reason": row["exit_reason"],
     }
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
