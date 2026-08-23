@@ -12,9 +12,12 @@ def test_repo_root_is_an_omarchy_plugin() -> None:
 
     assert manifest["schemaVersion"] == 1
     assert manifest["id"] == "tech.curren.signals"
+    assert manifest["version"] == "0.2.0"
     assert "bar-widget" in manifest["kinds"]
     entry_point = REPO_ROOT / manifest["entryPoints"]["barWidget"]
     assert entry_point.is_file()
+    assert manifest["barWidget"]["defaults"]["apiBaseUrl"] == "https://api.curren.tech"
+    assert any(item["key"] == "apiBaseUrl" for item in manifest["barWidget"]["schema"])
 
 
 def test_omarchy_plugin_does_not_embed_private_credentials() -> None:
@@ -22,6 +25,8 @@ def test_omarchy_plugin_does_not_embed_private_credentials() -> None:
     lowered = qml.lower()
 
     assert "curren_api_key" not in lowered
+    assert "curren_ingest_token" not in lowered
     assert "authorization" not in lowered
     assert "trade_intent" not in lowered
     assert "place_order" not in lowered
+    assert "/internal/v1/publications" not in lowered
