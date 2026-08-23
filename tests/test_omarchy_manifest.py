@@ -11,7 +11,7 @@ def test_repo_root_is_an_omarchy_plugin() -> None:
 
     assert manifest["schemaVersion"] == 1
     assert manifest["id"] == "tech.curren.signals"
-    assert manifest["version"] == "0.3.0"
+    assert manifest["version"] == "0.4.0"
     assert "bar-widget" in manifest["kinds"]
     entry_point = REPO_ROOT / manifest["entryPoints"]["barWidget"]
     assert entry_point.is_file()
@@ -29,3 +29,9 @@ def test_omarchy_plugin_does_not_embed_private_credentials() -> None:
     assert "trade_intent" not in lowered
     assert "place_order" not in lowered
     assert "/internal/v1/publications" not in lowered
+
+
+def test_bar_visibly_distinguishes_stale_from_live() -> None:
+    qml = (REPO_ROOT / "omarchy" / "BarWidget.qml").read_text()
+    assert "STALE" in qml
+    assert 'feedState === "Stale"' in qml
