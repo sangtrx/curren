@@ -85,7 +85,7 @@ async def test_forwarded_ip_is_ignored_from_untrusted_peer(tmp_path) -> None:
 
 
 @pytest.mark.asyncio
-async def test_allowlisted_proxy_can_supply_sanitized_forwarded_client_ip(tmp_path) -> None:
+async def test_allowlisted_proxy_can_supply_forwarded_client_ip(tmp_path) -> None:
     app = create_app(
         database_path=str(tmp_path / "curren.db"),
         public_rate_limit=1,
@@ -103,6 +103,35 @@ async def test_allowlisted_proxy_can_supply_sanitized_forwarded_client_ip(tmp_pa
     assert first_client.status_code == 200
     assert second_client.status_code == 200
     assert first_client_again.status_code == 429
+
+
+@pytest.mark.asyncio
+async def test_trusted_proxy_chain_uses_first_untrusted_hop_from_the_right(tmp_path) -> None:
+    app = create_app(
+        database_path=str(tmp_path / "curren.db"),
+        public_rate_limit=1,
+        trusted_proxy_ips="127.0.0.1/32,10.0.0.0/8",
+    )
+
+    async with await _client(app, peer="127.0.0.1") as client:
+        # Left-most values can be attacker-supplied. 198.51.100.9 is the actual
+        # untrusted client immediately before the trusted 10/8 proxy hop.
+        first = await client.get(
+            "/v1/public/summary",
+            headers={"X-Forwarded-For": "203.0.113.66, 198.51.100.9, 10.1.2.3"},
+        )
+        spoof_changed = await client.get(
+            "/v1/public/summary",
+            headers={"X-Forwarded-For": "203.0.113.77, 198.51.100.9, 10.1.2.3"},
+        )
+        other_client = await client.get(
+            "/v1/public/summary",
+            headers={"X-Forwarded-For": "198.51.100.10, 10.1.2.3"},
+        )
+
+    assert first.status_code == 200
+    assert spoof_changed.status_code == 429
+    assert other_client.status_code == 200
 
 
 @pytest.mark.asyncio
