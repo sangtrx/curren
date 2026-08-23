@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from curren.models import PublicationBatch, Signal, TrackRecord, VerificationRecord
+from curren.models import PublicationBatch, Signal, TrackRecord, VerificationRecord, normalize_signal_id
 
 
 def test_signal_contract_accepts_exact_levels_when_entitled() -> None:
@@ -70,6 +70,31 @@ def test_publication_status_is_closed_set() -> None:
         )
 
 
+def test_target_hit_state_requires_consistent_timestamp() -> None:
+    base = {
+        "source": "curren-runtime",
+        "generated_at": "2026-08-23T10:05:00Z",
+        "signals": [
+            {
+                "id": "crn_sig_42",
+                "symbol": "ETHUSDT",
+                "side": "short",
+                "status": "active",
+                "published_at": "2026-08-23T10:00:00Z",
+                "targets": [{"price": 4740.0, "status": "hit"}],
+            }
+        ],
+    }
+    with pytest.raises(ValidationError):
+        PublicationBatch.model_validate(base)
+
+    base["signals"][0]["targets"] = [
+        {"price": 4740.0, "status": "pending", "hit_at": "2026-08-23T10:04:00Z"}
+    ]
+    with pytest.raises(ValidationError):
+        PublicationBatch.model_validate(base)
+
+
 def test_closed_publication_requires_terminal_timestamp_and_result() -> None:
     with pytest.raises(ValidationError):
         PublicationBatch.model_validate(
@@ -88,6 +113,13 @@ def test_closed_publication_requires_terminal_timestamp_and_result() -> None:
                 ],
             }
         )
+
+
+def test_signal_id_normalization_rejects_path_or_query_characters() -> None:
+    assert normalize_signal_id(" crn_sig:42 ") == "crn_sig:42"
+    for value in ("../secret", "sig/child", "sig?query", "sig#fragment", ""):
+        with pytest.raises(ValueError):
+            normalize_signal_id(value)
 
 
 def test_track_record_does_not_require_profit_claims() -> None:
