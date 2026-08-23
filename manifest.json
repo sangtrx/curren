@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "tech.curren.signals",
+  "name": "Curren Signals",
+  "version": "0.1.0",
+  "author": "Curren",
+  "license": "MIT",
+  "description": "Native Curren signal status and verifiable results for Omarchy Quattro.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "omarchy/BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Curren Signals",
+    "description": "Curren active-signal status and public proof/results.",
+    "category": "Finance",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
