@@ -6,7 +6,15 @@ from typing import Any
 
 import httpx
 
-from curren.models import LifecycleEvent, PublicSummary, Signal, SignalList, TrackRecord, VerificationRecord
+from curren.models import (
+    LifecycleEvent,
+    PublicSummary,
+    Signal,
+    SignalList,
+    TrackRecord,
+    VerificationRecord,
+    normalize_signal_id,
+)
 
 DEFAULT_API_URL = "https://api.curren.tech"
 DEFAULT_TIMEOUT_SECONDS = 10.0
@@ -37,7 +45,7 @@ class CurrenClient:
 
         headers = {
             "Accept": "application/json",
-            "User-Agent": "curren-python/0.3.0",
+            "User-Agent": "curren-python/0.4.0",
         }
         if resolved_key:
             headers["Authorization"] = f"Bearer {resolved_key}"
@@ -126,7 +134,4 @@ def _bounded_limit(limit: int) -> int:
 
 
 def _safe_id(value: str) -> str:
-    value = value.strip()
-    if not value or len(value) > 128 or "/" in value or ".." in value:
-        raise ValueError("invalid signal id")
-    return value
+    return normalize_signal_id(value)
