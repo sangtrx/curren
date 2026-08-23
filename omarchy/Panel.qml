@@ -226,7 +226,7 @@ Panel {
 
               Column {
                 anchors.verticalCenter: parent.verticalCenter
-                CurrenText { text: String(root.activeCount); font.pixelSize: Style.font.title; font.bold: true }
+                CurrenText { text: String(root.activeCount); font.pixelSize: Style.font.heading; font.bold: true }
                 MutedText { text: "ACTIVE SIGNALS"; font.bold: true }
               }
 
