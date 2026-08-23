@@ -1,0 +1,36 @@
+{
+  "source": "example-only",
+  "generated_at": "2026-08-23T12:00:05Z",
+  "signals": [
+    {
+      "id": "crn_example_do_not_publish",
+      "symbol": "EXAMPLEUSDT",
+      "side": "long",
+      "status": "active",
+      "published_at": "2026-08-23T12:00:00Z",
+      "entry": 100.0,
+      "stop": 98.0,
+      "targets": [
+        {
+          "price": 102.0,
+          "status": "pending"
+        },
+        {
+          "price": 104.0,
+          "status": "pending"
+        }
+      ],
+      "mark": 100.5,
+      "current_r": 0.25,
+      "peak_r": 0.3,
+      "lifecycle": [
+        {
+          "event_type": "entry_hit",
+          "event_at": "2026-08-23T12:00:30Z",
+          "price": 100.0,
+          "r_multiple": 0.0
+        }
+      ]
+    }
+  ]
+}
