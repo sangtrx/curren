@@ -84,6 +84,7 @@ class VerificationRecord(CurrenModel):
     verified: bool
     immutable: bool | None = None
     record_version: str | None = None
+    recorded_at: datetime | None = None
 
 
 class PublicSummary(CurrenModel):
@@ -91,3 +92,47 @@ class PublicSummary(CurrenModel):
     delayed_signals: list[Signal] = Field(default_factory=list)
     recent_results: list[Signal] = Field(default_factory=list)
     as_of: datetime
+
+
+class PublicationSignal(CurrenModel):
+    """Full sanitized projection accepted from the private Curren runtime.
+
+    This contract intentionally contains no raw source messages, AI features,
+    execution state, account data, exchange credentials, or operator metadata.
+    """
+
+    id: str
+    symbol: str
+    side: SignalSide
+    status: str
+    published_at: datetime
+    public_available_at: datetime | None = None
+    entry: float | None = None
+    stop: float | None = None
+    targets: list[Target] = Field(default_factory=list)
+    mark: float | None = None
+    current_r: float | None = None
+    peak_r: float | None = None
+    realized_r: float | None = None
+    closed_at: datetime | None = None
+    exit_reason: str | None = None
+    lifecycle: list[LifecycleEvent] = Field(default_factory=list)
+
+
+class PublicationBatch(CurrenModel):
+    source: str = Field(min_length=1, max_length=64)
+    generated_at: datetime
+    signals: list[PublicationSignal] = Field(default_factory=list, max_length=500)
+
+
+class IngestResult(CurrenModel):
+    accepted: int = 0
+    inserted: int = 0
+    updated: int = 0
+    lifecycle_events_inserted: int = 0
+
+
+class HealthStatus(CurrenModel):
+    status: str
+    signals: int
+    ingestion_enabled: bool
