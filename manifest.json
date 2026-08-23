@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "tech.curren.signals",
   "name": "Curren Signals",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Curren",
   "license": "MIT",
   "description": "Native Curren signal status and verifiable results for Omarchy Quattro.",
