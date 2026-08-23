@@ -36,12 +36,17 @@ class SignalStatus(StrEnum):
     EXPIRED = "expired"
 
 
+class TargetStatus(StrEnum):
+    PENDING = "pending"
+    HIT = "hit"
+
+
 TERMINAL_SIGNAL_STATUSES = frozenset({SignalStatus.CLOSED, SignalStatus.EXPIRED})
 
 
 class Target(CurrenModel):
     price: float | None = None
-    status: str = "pending"
+    status: TargetStatus | str = TargetStatus.PENDING
     hit_at: datetime | None = None
 
 
@@ -117,7 +122,7 @@ class PublicSummary(CurrenModel):
 
 class PublicationTarget(StrictCurrenModel):
     price: float = Field(gt=0)
-    status: str = Field(default="pending", min_length=1, max_length=32)
+    status: TargetStatus = TargetStatus.PENDING
     hit_at: datetime | None = None
 
     @field_validator("price")
@@ -129,6 +134,14 @@ class PublicationTarget(StrictCurrenModel):
     @classmethod
     def aware_hit_at(cls, value: datetime | None) -> datetime | None:
         return _aware(value, "target hit_at")
+
+    @model_validator(mode="after")
+    def validate_hit_state(self) -> PublicationTarget:
+        if self.status == TargetStatus.HIT and self.hit_at is None:
+            raise ValueError("hit targets require hit_at")
+        if self.status == TargetStatus.PENDING and self.hit_at is not None:
+            raise ValueError("pending targets cannot contain hit_at")
+        return self
 
 
 class PublicationLifecycleEvent(StrictCurrenModel):
@@ -188,10 +201,7 @@ class PublicationSignal(StrictCurrenModel):
     @field_validator("id")
     @classmethod
     def valid_id(cls, value: str) -> str:
-        normalized = value.strip()
-        if not _SIGNAL_ID_RE.fullmatch(normalized):
-            raise ValueError("signal id contains unsupported characters")
-        return normalized
+        return normalize_signal_id(value)
 
     @field_validator("symbol")
     @classmethod
@@ -304,8 +314,13 @@ class IngestResult(CurrenModel):
 
 class HealthStatus(CurrenModel):
     status: str
-    signals: int
-    ingestion_enabled: bool
+
+
+def normalize_signal_id(value: str) -> str:
+    normalized = value.strip()
+    if not _SIGNAL_ID_RE.fullmatch(normalized):
+        raise ValueError("invalid signal id")
+    return normalized
 
 
 def _aware(value: datetime | None, field: str) -> datetime | None:
