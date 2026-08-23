@@ -14,11 +14,15 @@ The private signal-generation, strategy, raw-source, model, account, and executi
 
 ## Development
 
+Run the local verification suite before opening a pull request:
+
 ```bash
 python -m pip install -e '.[dev,mcp]'
+python -m compileall -q src
 pytest -q
 ruff check .
 python -m build
+docker build -t curren-api:local .
 ```
 
 For Omarchy changes, also validate on Omarchy 4/Quattro:
@@ -26,8 +30,6 @@ For Omarchy changes, also validate on Omarchy 4/Quattro:
 ```bash
 omarchy plugin validate .
 ```
-
-Pull-request CI runs the supported Python matrix plus package and container builds; treat a green CI run as the minimum merge gate, not a replacement for Omarchy-host validation of QML changes.
 
 ## Public contract rules
 
