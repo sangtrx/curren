@@ -26,6 +26,8 @@ Panel {
   property string errorMessage: ""
   property double lastSuccessAt: 0
   property bool requestInFlight: false
+  property var activeRequest: null
+  property int requestGeneration: 0
 
   readonly property string apiBaseUrl: {
     var candidate = root.settings && root.settings.apiBaseUrl ? String(root.settings.apiBaseUrl).trim() : ""
@@ -49,20 +51,28 @@ Panel {
     if (Date.now() - root.lastSuccessAt > 60000) refreshNow()
   }
 
+  function setFailure(message) {
+    root.feedState = root.lastSuccessAt > 0 ? "Stale" : "Offline"
+    root.errorMessage = message
+  }
+
   function refreshNow() {
     if (root.requestInFlight) return
     root.requestInFlight = true
     root.errorMessage = ""
     if (root.lastSuccessAt === 0) root.feedState = "Loading"
 
+    var generation = ++root.requestGeneration
     var request = new XMLHttpRequest()
+    root.activeRequest = request
     request.onreadystatechange = function() {
-      if (request.readyState !== XMLHttpRequest.DONE) return
+      if (request.readyState !== XMLHttpRequest.DONE || generation !== root.requestGeneration) return
+      requestTimeout.stop()
+      root.activeRequest = null
       root.requestInFlight = false
       var status = Number(request.status) || 0
       if (status < 200 || status >= 300) {
-        root.feedState = root.lastSuccessAt > 0 ? "Stale" : "Offline"
-        root.errorMessage = status > 0 ? "HTTP " + status : "Network unavailable"
+        root.setFailure(status > 0 ? "HTTP " + status : "Network unavailable")
         return
       }
 
@@ -76,12 +86,12 @@ Panel {
         root.feedState = "Live"
         root.errorMessage = ""
       } catch (error) {
-        root.feedState = root.lastSuccessAt > 0 ? "Stale" : "Offline"
-        root.errorMessage = "Malformed API response"
+        root.setFailure("Malformed API response")
       }
     }
     request.open("GET", root.summaryUrl, true)
     request.setRequestHeader("Accept", "application/json")
+    requestTimeout.restart()
     request.send()
   }
 
@@ -159,6 +169,20 @@ Panel {
         text: root.signalR(row.signal)
         font.bold: true
       }
+    }
+  }
+
+  Timer {
+    id: requestTimeout
+    interval: 15000
+    repeat: false
+    onTriggered: {
+      if (!root.requestInFlight) return
+      root.requestGeneration += 1
+      if (root.activeRequest) root.activeRequest.abort()
+      root.activeRequest = null
+      root.requestInFlight = false
+      root.setFailure("Request timed out")
     }
   }
 
