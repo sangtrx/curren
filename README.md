@@ -2,18 +2,20 @@
 
 **Verifiable trading intelligence for humans and AI agents.**
 
-Curren is the public developer surface for [curren.tech](https://curren.tech/): a durable read-model API, terminal CLI, MCP server for AI agents, publication client, and native Omarchy Quattro plugin.
+Curren is the public developer surface for [curren.tech](https://curren.tech/): a read-model API, terminal CLI, MCP server for AI agents, publication client, and native Omarchy Quattro plugin.
 
-> The private Curren signal engine, strategy logic, raw source ingestion, AI guard, execution runtime, accounts, and production trading database are intentionally **not** part of this repository.
+> The private Curren signal engine, strategy logic, raw-source ingestion, AI guard, execution runtime, accounts, and production trading database are intentionally **not** part of this repository.
 
 ## What ships here
 
-- **Curren API** — FastAPI + SQLite/WAL public read model with anonymous, Premium, and Agent views.
-- **Publication boundary** — authenticated, idempotent ingestion of sanitized signal projections from the private runtime.
-- **CLI** — active signals, lifecycle, results, track record, and publication-integrity verification.
-- **MCP server** — the same read-only intelligence for MCP-compatible AI agents.
-- **Omarchy plugin** — a native Quattro bar widget for delayed/public signal proof and recent results.
-- **Contracts** — versioned Pydantic models shared across the server, publisher, CLI, and MCP adapters.
+- **Curren API** — FastAPI + SQLite/WAL read model with Public, Premium, and Agent views.
+- **Publication boundary** — strict authenticated ingestion of sanitized projections from the private runtime.
+- **Replay safety** — per-signal source timestamps prevent stale retries from rolling state backward.
+- **Verifiable records** — immutable initial trade-plan records plus separate immutable terminal-outcome hashes.
+- **Rate limiting** — bounded application-level limits for public, authenticated, and ingestion traffic.
+- **CLI** — active signals, lifecycle, results, track record, and verification.
+- **MCP server** — the same read-only intelligence for MCP-compatible agents.
+- **Omarchy plugin** — native Quattro bar widget for delayed/public signal proof and recent results.
 
 All public clients consume the API. None connects directly to the private trading runtime or its database.
 
@@ -23,24 +25,27 @@ All public clients consume the API. None connects directly to the private tradin
 PRIVATE CURREN RUNTIME
 signal generation / AI guard / lifecycle / execution
                     |
-                    | sanitized outbound PublicationBatch
+                    | strict sanitized PublicationBatch
                     v
           POST /internal/v1/publications
                     |
                     v
-+-------------------------------------------+
-| CURREN PUBLIC READ MODEL                  |
-| SQLite WAL + immutable initial snapshot   |
-| + append-only lifecycle events            |
-+---------------------+---------------------+
-                      |
-                      v
-                 Curren API
-             /        |        \
-           CLI       MCP      Omarchy
++------------------------------------------------+
+| CURREN PUBLIC READ MODEL                       |
+| SQLite WAL                                     |
+| immutable initial publication                  |
+| append-only lifecycle events                   |
+| immutable terminal outcome                     |
+| per-signal replay watermark                    |
++------------------------+-----------------------+
+                         |
+                         v
+                    Curren API
+                /        |        \
+              CLI       MCP      Omarchy
 ```
 
-The publication flow is one-way. The public service has no endpoint for placing orders, changing trading controls, or writing back into the private runtime.
+The flow is one-way. The public service has no endpoint for placing orders, changing trading controls, or writing back into the private runtime.
 
 ## Quick start
 
@@ -59,13 +64,11 @@ curl http://127.0.0.1:8000/healthz
 curl http://127.0.0.1:8000/v1/public/summary
 ```
 
-Docker is also supported:
+Docker:
 
 ```bash
 docker compose up --build
 ```
-
-The SQLite database is persisted in the `curren-data` volume.
 
 ## Publishing real data
 
@@ -76,7 +79,7 @@ export CURREN_INGEST_TOKEN='replace-with-a-long-random-secret'
 curren-api
 ```
 
-A private runtime integration sends a sanitized `PublicationBatch`:
+A private runtime sends a strict sanitized `PublicationBatch`:
 
 ```json
 {
@@ -103,6 +106,14 @@ A private runtime integration sends a sanitized `PublicationBatch`:
 }
 ```
 
+Unknown fields are rejected rather than ignored. Public signal status is a closed set:
+
+```text
+pending | active | closed | expired
+```
+
+The private projector must normalize internal lifecycle states such as `closed_win` or `closed_loss` into that public contract before publication.
+
 For integration testing:
 
 ```bash
@@ -111,7 +122,15 @@ export CURREN_INGEST_TOKEN='replace-with-a-long-random-secret'
 curren-publish examples/publication.example.json
 ```
 
-On first ingestion the API records an immutable hash over signal id, symbol, side, publication timestamp, entry, stop, and target prices. Later projections may update lifecycle/result state but cannot rewrite the original trade plan; conflicts return HTTP `409`.
+### Replay and immutability rules
+
+For each signal id, Curren stores the publication source and latest `generated_at` watermark. A later-arriving batch with an equal/older watermark is counted as `stale_ignored` and cannot roll the public state backward.
+
+On first publication the API hashes immutable plan fields: signal id, symbol, side, publication timestamp, entry, stop, and target prices. Attempts to mutate them return HTTP `409`.
+
+When a signal first becomes terminal, Curren also records an immutable outcome hash over terminal status, `realized_r`, `closed_at`, and `exit_reason`. A later projection cannot rewrite that result under the same signal id. Track-record statistics are computed from these locked outcome records, not mutable signal rows.
+
+Lifecycle records are append-only. Reusing the same `(signal_id, event_type, event_at)` with different price/R data is rejected.
 
 ## Entitlements
 
@@ -128,21 +147,38 @@ Clients send `Authorization: Bearer crn_...`.
 
 | Data | Public | Premium / Agent |
 | --- | --- | --- |
-| Closed results | full published plan + result | full |
+| Closed results | full published plan + locked result | full |
 | Active direction/status | after server-side delay | realtime |
 | Active mark/R context | after server-side delay | realtime |
 | Active entry/SL/TP prices | hidden | visible |
 | Active lifecycle event prices | hidden/delayed | visible realtime |
 | Track record | visible | visible |
-| Integrity record | once signal is visible | realtime |
+| Publication verification | once signal is visible | realtime |
+| Terminal outcome verification | for terminal signals | realtime |
 
-The default delay is 1,800 seconds. `CURREN_PUBLIC_DELAY_SECONDS` is an enforced **minimum** at the API boundary: a publisher may request a later public time but cannot shorten the server policy.
+`CURREN_PUBLIC_DELAY_SECONDS` is an enforced **minimum** at the API boundary: a publisher may request a later public time but cannot shorten server policy.
+
+## Rate limiting
+
+The API ships a bounded single-process limiter. Defaults are per 60-second window:
+
+```text
+Public / anonymous     60 requests
+Premium / Agent       300 requests per API key
+Private ingestion     120 requests per ingestion credential
+```
+
+Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset-After`. HTTP `429` includes `Retry-After`.
+
+Unknown/invalid read tokens do **not** receive their own buckets; they remain limited by peer IP so rotating bogus Bearer tokens cannot bypass the anonymous quota. Raw API keys are never used as bucket identifiers.
+
+The built-in limiter is intentionally process-local. If you run multiple workers/replicas, enforce a global/distributed limit at the reverse proxy/API gateway as well.
 
 ## CLI
 
 ```bash
 export CURREN_API_URL='http://127.0.0.1:8000'
-# export CURREN_API_KEY='crn_...'  # optional entitlement
+# export CURREN_API_KEY='crn_...'
 
 curren summary
 curren signals
@@ -154,17 +190,17 @@ curren track-record
 curren verify crn_sig_01
 ```
 
-If the API omits a restricted field, the CLI reports it unavailable; it never reconstructs levels.
+The client reports rate-limit retry hints and never reconstructs fields omitted by server entitlement.
 
 ## MCP
 
-Install the MCP extra:
+Install:
 
 ```bash
 python -m pip install -e '.[mcp]'
 ```
 
-For normal agent use, run over stdio:
+Normal agent use is stdio:
 
 ```bash
 export CURREN_API_URL='https://api.curren.tech'
@@ -184,13 +220,13 @@ Tools:
 Local Streamable HTTP is available for development:
 
 ```bash
-export CURREN_MCP_TRANSPORT=streamable-http
-export CURREN_MCP_HOST=127.0.0.1
-export CURREN_MCP_PORT=8001
+CURREN_MCP_TRANSPORT=streamable-http \
+CURREN_MCP_HOST=127.0.0.1 \
+CURREN_MCP_PORT=8001 \
 curren-mcp
 ```
 
-It uses MCP v2 stateless Streamable HTTP with JSON responses. The bundled v0.2 server deliberately rejects non-loopback HTTP binds because it does not yet ship an OAuth resource-server gate. Do not expose a paid upstream `CURREN_API_KEY` through an unauthenticated MCP endpoint; production remote MCP should sit behind a separately authenticated MCP resource server/gateway.
+The bundled v0.3 server rejects non-loopback HTTP binds because it does not ship an OAuth resource-server gate. Do not expose a paid upstream `CURREN_API_KEY` through an unauthenticated MCP endpoint.
 
 ## Omarchy Quattro
 
@@ -200,7 +236,7 @@ The repository root is a third-party Omarchy plugin:
 omarchy plugin add https://github.com/sangtrx/curren.git --enable
 ```
 
-It exposes one `bar-widget`, reads only `/v1/public/summary`, and stores no API key, exchange credential, or execution permission in QML. `apiBaseUrl` is configurable for local/staging validation.
+It exposes one `bar-widget`, reads only `/v1/public/summary`, and stores no API key, exchange credential, or execution permission in QML.
 
 ```bash
 omarchy plugin validate .
@@ -208,9 +244,9 @@ omarchy plugin validate .
 
 ## Verification semantics
 
-`curren verify <signal-id>` recomputes the SHA-256 hash of the initial publication snapshot stored by the Curren API. The server rejects later changes to the immutable plan fields.
+`curren verify <signal-id>` verifies the stored SHA-256 initial publication record and, after closure/expiry, the terminal outcome record.
 
-This detects mutation inside Curren's publication store. It is **not** an independent timestamp authority, blockchain proof, profitability guarantee, or third-party notary.
+These hashes detect mutation inside Curren's publication store. They are **not** an independent timestamp authority, blockchain proof, profitability guarantee, or third-party notary.
 
 ## Environment
 
@@ -218,6 +254,10 @@ This detects mutation inside Curren's publication store. It is **not** an indepe
 | --- | --- | --- |
 | `CURREN_DB_PATH` | Public read-model SQLite path | `./.local/curren.db` |
 | `CURREN_PUBLIC_DELAY_SECONDS` | Minimum delay for active public visibility | `1800` |
+| `CURREN_RATE_LIMIT_WINDOW_SECONDS` | Limiter window | `60` |
+| `CURREN_PUBLIC_RATE_LIMIT` | Anonymous requests/window | `60` |
+| `CURREN_AUTH_RATE_LIMIT` | Premium/Agent requests/key/window | `300` |
+| `CURREN_INGEST_RATE_LIMIT` | Publication requests/window | `120` |
 | `CURREN_INGEST_TOKEN` | Protect/enable internal publication endpoint | unset = disabled |
 | `CURREN_API_KEYS_JSON` | API key → `premium`/`agent` mapping | `{}` |
 | `CURREN_API_HOST` | API bind host | `127.0.0.1` |
@@ -233,15 +273,25 @@ This detects mutation inside Curren's publication store. It is **not** an indepe
 
 This repository intentionally does **not** publish raw source messages/identifiers, strategy/scoring code, model artifacts/features, private runtime DB credentials, trade intents, venue/account state, exchange credentials, kill switches, or operator secrets.
 
-The ingestion endpoint is disabled unless `CURREN_INGEST_TOKEN` is configured. Read entitlements use header credentials, never query-string secrets. For internet deployment, terminate TLS, add ingress rate limits, and network-restrict `/internal/v1/publications` in addition to its bearer token.
+The ingestion endpoint is disabled unless `CURREN_INGEST_TOKEN` is configured. Read entitlements use header credentials, never query-string secrets. For internet deployment, terminate TLS, network-restrict `/internal/v1/publications`, and enforce ingress rate limits in addition to the built-in limiter.
 
 ## Development
 
+This repository intentionally does not run GitHub Actions. Validate changes locally/on the target host:
+
 ```bash
 python -m pip install -e '.[dev,mcp]'
+python -m compileall -q src
 pytest -q
 ruff check .
 python -m build
+docker build -t curren-api:local .
+```
+
+For Omarchy changes also run:
+
+```bash
+omarchy plugin validate .
 ```
 
 See [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md), [`SECURITY.md`](SECURITY.md), and [`CONTRIBUTING.md`](CONTRIBUTING.md).
