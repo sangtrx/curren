@@ -88,10 +88,12 @@ A healthy empty database is valid. `ingestion_enabled=false` means the service i
 | `CURREN_DB_PATH` | persistent volume path |
 | `CURREN_API_HOST` | usually `0.0.0.0` inside container |
 | `CURREN_API_PORT` | usually `8000` |
-| `CURREN_PUBLIC_DELAY_SECONDS` | commercial/public-delay policy |
+| `CURREN_PUBLIC_DELAY_SECONDS` | enforced minimum public-delay policy |
 | `CURREN_INGEST_TOKEN` | long random secret, private publisher only |
 | `CURREN_API_KEYS_JSON` | provisioned server-side machine entitlements |
 | `CURREN_LOG_LEVEL` | `info` normally |
+
+The API enforces `published_at + CURREN_PUBLIC_DELAY_SECONDS` as the earliest active public availability. A publisher can delay a record further but cannot request an earlier public time.
 
 ## Publication retry model
 
@@ -127,17 +129,17 @@ For staging/local testing set the plugin's `apiBaseUrl` setting to the reachable
 
 ## MCP
 
-For local agent use, prefer `stdio`.
+For agent integrations, prefer `stdio`; its security boundary is the process that launches the server.
 
-For a remote MCP deployment:
+Local Streamable HTTP is available for development only:
 
 ```bash
 CURREN_MCP_TRANSPORT=streamable-http \
-CURREN_MCP_HOST=0.0.0.0 \
+CURREN_MCP_HOST=127.0.0.1 \
 CURREN_MCP_PORT=8001 \
 curren-mcp
 ```
 
-The MCP process needs only a read API key (`CURREN_API_KEY`) and `CURREN_API_URL`. It never needs `CURREN_INGEST_TOKEN`.
+The bundled v0.2 MCP process refuses non-loopback binds. It needs only a read API key (`CURREN_API_KEY`) and `CURREN_API_URL`; it never needs `CURREN_INGEST_TOKEN`.
 
-If exposing MCP publicly, add proper MCP HTTP authorization and ingress controls; do not rely on the upstream Curren API key being hidden inside a globally accessible MCP server.
+A future public remote MCP endpoint must be deployed as an authenticated MCP resource server (OAuth 2.1 bearer validation / protected-resource metadata) or behind an equivalently authenticated gateway. Do not expose an upstream paid Curren API key through a globally reachable unauthenticated MCP process.
