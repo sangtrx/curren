@@ -275,8 +275,13 @@ class PublicationBatch(StrictCurrenModel):
         return _aware(value, "generated_at")
 
     @model_validator(mode="after")
-    def generated_after_projection(self) -> PublicationBatch:
+    def validate_batch_projection(self) -> PublicationBatch:
+        seen: set[str] = set()
         for signal in self.signals:
+            if signal.id in seen:
+                raise ValueError(f"duplicate signal id in publication batch: {signal.id}")
+            seen.add(signal.id)
+
             latest = signal.closed_at or signal.published_at
             if signal.lifecycle:
                 latest = max(latest, max(event.event_at for event in signal.lifecycle))
