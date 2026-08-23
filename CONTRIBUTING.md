@@ -27,6 +27,8 @@ For Omarchy changes, also validate on Omarchy 4/Quattro:
 omarchy plugin validate .
 ```
 
+Pull-request CI runs the supported Python matrix plus package and container builds; treat a green CI run as the minimum merge gate, not a replacement for Omarchy-host validation of QML changes.
+
 ## Public contract rules
 
 Please preserve these invariants:
