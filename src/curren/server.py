@@ -6,7 +6,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
@@ -22,6 +22,7 @@ from curren.models import (
     SignalStatus,
     TrackRecord,
     VerificationRecord,
+    normalize_signal_id,
 )
 from curren.rate_limit import FixedWindowRateLimiter, RateLimitDecision, token_identity
 from curren.store import AccessPolicy, PublicationConflict, ReadStore, SignalNotFound
@@ -36,6 +37,7 @@ class ServerConfig:
     ingest_token: str | None
     api_keys: dict[str, str]
     public_delay_seconds: int
+    max_clock_skew_seconds: int
     rate_limit_window_seconds: int
     public_rate_limit: int
     authenticated_rate_limit: int
@@ -49,6 +51,7 @@ class ServerConfig:
             ingest_token=_clean_secret(os.getenv("CURREN_INGEST_TOKEN")),
             api_keys=_parse_api_keys(os.getenv("CURREN_API_KEYS_JSON", "{}")),
             public_delay_seconds=max(0, int(os.getenv("CURREN_PUBLIC_DELAY_SECONDS", "1800"))),
+            max_clock_skew_seconds=_nonnegative_int_env("CURREN_MAX_CLOCK_SKEW_SECONDS", 300),
             rate_limit_window_seconds=_positive_int_env("CURREN_RATE_LIMIT_WINDOW_SECONDS", 60),
             public_rate_limit=_positive_int_env("CURREN_PUBLIC_RATE_LIMIT", 60),
             authenticated_rate_limit=_positive_int_env("CURREN_AUTH_RATE_LIMIT", 300),
@@ -63,6 +66,7 @@ def create_app(
     ingest_token: str | None = None,
     api_keys: dict[str, str] | None = None,
     public_delay_seconds: int | None = None,
+    max_clock_skew_seconds: int | None = None,
     rate_limit_window_seconds: int | None = None,
     public_rate_limit: int | None = None,
     authenticated_rate_limit: int | None = None,
@@ -79,6 +83,7 @@ def create_app(
             if public_delay_seconds is not None
             else environment.public_delay_seconds
         ),
+        max_clock_skew_seconds=_nonnegative_int(max_clock_skew_seconds, environment.max_clock_skew_seconds),
         rate_limit_window_seconds=_positive_int(rate_limit_window_seconds, environment.rate_limit_window_seconds),
         public_rate_limit=_positive_int(public_rate_limit, environment.public_rate_limit),
         authenticated_rate_limit=_positive_int(authenticated_rate_limit, environment.authenticated_rate_limit),
@@ -95,7 +100,7 @@ def create_app(
 
     app = FastAPI(
         title="Curren API",
-        version="0.3.0",
+        version="0.4.0",
         description=(
             "Read-only trading-intelligence API backed by sanitized publications from the private Curren runtime. "
             "Public clients cannot execute trades or access private runtime state."
@@ -148,11 +153,9 @@ def create_app(
 
     @app.get("/healthz", response_model=HealthStatus, tags=["system"])
     def healthz() -> HealthStatus:
-        return HealthStatus(
-            status="ok",
-            signals=store.signal_count(),
-            ingestion_enabled=bool(config.ingest_token),
-        )
+        # Keep this endpoint minimal: it is intentionally unauthenticated and must
+        # not reveal hidden/realtime signal activity through internal row counts.
+        return HealthStatus(status="ok")
 
     @app.get("/v1/public/summary", response_model=PublicSummary, tags=["public"])
     def public_summary(response: Response) -> PublicSummary:
@@ -214,6 +217,7 @@ def create_app(
     )
     def ingest(batch: PublicationBatch) -> IngestResult:
         try:
+            _validate_publication_clock(batch, max_clock_skew_seconds=config.max_clock_skew_seconds)
             return store.ingest(_enforce_public_delay(batch, config.public_delay_seconds))
         except PublicationConflict as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
@@ -274,11 +278,22 @@ def _rate_limit_peer(
     forwarded = request.headers.get("X-Forwarded-For", "")
     if not forwarded:
         return direct_peer
-    candidate = forwarded.split(",", 1)[0].strip()
+
     try:
-        return ipaddress.ip_address(candidate).compressed
+        forwarded_chain = [ipaddress.ip_address(part.strip()) for part in forwarded.split(",") if part.strip()]
     except ValueError:
         return direct_peer
+    if not forwarded_chain:
+        return direct_peer
+
+    # Walk from the application backwards toward the caller. Only skip hops that
+    # are explicitly trusted proxies; the first untrusted hop is the client bucket.
+    chain = forwarded_chain + [ipaddress.ip_address(direct_peer)]
+    for candidate in reversed(chain):
+        if _ip_in_networks(candidate, trusted_proxy_networks):
+            continue
+        return candidate.compressed
+    return forwarded_chain[0].compressed
 
 
 def _address_in_networks(
@@ -289,7 +304,14 @@ def _address_in_networks(
         parsed = ipaddress.ip_address(address)
     except ValueError:
         return False
-    return any(parsed.version == network.version and parsed in network for network in networks)
+    return _ip_in_networks(parsed, networks)
+
+
+def _ip_in_networks(
+    address: ipaddress.IPv4Address | ipaddress.IPv6Address,
+    networks: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...],
+) -> bool:
+    return any(address.version == network.version and address in network for network in networks)
 
 
 def _parse_trusted_proxy_networks(
@@ -305,6 +327,12 @@ def _parse_trusted_proxy_networks(
         except ValueError as exc:
             raise ValueError(f"invalid trusted proxy IP/network: {value}") from exc
     return tuple(networks)
+
+
+def _validate_publication_clock(batch: PublicationBatch, *, max_clock_skew_seconds: int) -> None:
+    latest_allowed = datetime.now(UTC) + timedelta(seconds=max_clock_skew_seconds)
+    if batch.generated_at > latest_allowed:
+        raise ValueError("generated_at exceeds the allowed future clock skew")
 
 
 def _enforce_public_delay(batch: PublicationBatch, delay_seconds: int) -> PublicationBatch:
@@ -367,10 +395,10 @@ def _symbol(value: str) -> str:
 
 
 def _signal_id(value: str) -> str:
-    normalized = value.strip()
-    if not normalized or len(normalized) > 128 or "/" in normalized or ".." in normalized:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid signal id")
-    return normalized
+    try:
+        return normalize_signal_id(value)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid signal id") from exc
 
 
 def _positive_int(value: int | None, fallback: int) -> int:
@@ -383,6 +411,18 @@ def _positive_int(value: int | None, fallback: int) -> int:
 def _positive_int_env(name: str, default: int) -> int:
     raw = os.getenv(name)
     return _positive_int(int(raw) if raw is not None else None, default)
+
+
+def _nonnegative_int(value: int | None, fallback: int) -> int:
+    resolved = fallback if value is None else int(value)
+    if resolved < 0:
+        raise ValueError("clock-skew values must be non-negative integers")
+    return resolved
+
+
+def _nonnegative_int_env(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    return _nonnegative_int(int(raw) if raw is not None else None, default)
 
 
 app = create_app()
