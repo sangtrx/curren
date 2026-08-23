@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from curren.models import Signal, TrackRecord, VerificationRecord
+from curren.models import PublicationBatch, Signal, TrackRecord, VerificationRecord
 
 
 def test_signal_contract_accepts_exact_levels_when_entitled() -> None:
@@ -23,6 +23,33 @@ def test_signal_contract_accepts_exact_levels_when_entitled() -> None:
     assert signal.targets[0].price == 4740.0
 
 
+def test_publication_batch_is_sanitized_contract_not_private_runtime_dump() -> None:
+    batch = PublicationBatch.model_validate(
+        {
+            "source": "curren-runtime",
+            "generated_at": "2026-08-23T10:00:05Z",
+            "signals": [
+                {
+                    "id": "crn_sig_42",
+                    "symbol": "ETHUSDT",
+                    "side": "short",
+                    "status": "active",
+                    "published_at": "2026-08-23T10:00:00Z",
+                    "entry": 4800.0,
+                    "stop": 4860.0,
+                    "targets": [{"price": 4740.0}],
+                    "raw_source_message": "ignored by contract",
+                    "trade_intent": {"should": "not survive"},
+                }
+            ],
+        }
+    )
+
+    serialized = batch.model_dump(mode="json")
+    assert "raw_source_message" not in serialized["signals"][0]
+    assert "trade_intent" not in serialized["signals"][0]
+
+
 def test_track_record_does_not_require_profit_claims() -> None:
     record = TrackRecord.model_validate(
         {
@@ -41,10 +68,11 @@ def test_verification_record_requires_hash_and_timestamp() -> None:
         {
             "signal_id": "crn_sig_42",
             "published_at": "2026-08-23T10:00:00Z",
+            "recorded_at": "2026-08-23T10:00:01Z",
             "content_hash": "sha256:abc123",
             "verified": True,
             "immutable": True,
-            "record_version": "signal-public.v1",
+            "record_version": "signal-publication.v1",
         }
     )
 
