@@ -9,8 +9,9 @@ Use this checklist before publishing a Curren public-platform release.
 - [ ] Python 3.13 CI passes.
 - [ ] `pytest -q` passes.
 - [ ] `ruff check .` passes.
-- [ ] source distribution and wheel build successfully.
+- [ ] source distribution and wheel build successfully without project-metadata deprecation warnings.
 - [ ] API Docker image builds successfully.
+- [ ] CI actions run on their current Node 24-compatible major versions.
 
 ## Contract/security gates
 
