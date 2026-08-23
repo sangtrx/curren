@@ -37,7 +37,7 @@ class CurrenClient:
 
         headers = {
             "Accept": "application/json",
-            "User-Agent": "curren-python/0.1.0",
+            "User-Agent": "curren-python/0.2.0",
         }
         if resolved_key:
             headers["Authorization"] = f"Bearer {resolved_key}"
