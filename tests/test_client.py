@@ -67,6 +67,18 @@ async def test_entitlement_failure_is_explicit() -> None:
 
 
 @pytest.mark.asyncio
+async def test_rate_limit_failure_includes_retry_after() -> None:
+    transport = httpx.MockTransport(
+        lambda _request: httpx.Response(429, json={"detail": "rate limit exceeded"}, headers={"Retry-After": "17"})
+    )
+    async with CurrenClient(base_url="https://example.test", transport=transport) as client:
+        with pytest.raises(CurrenError, match="retry after 17s") as exc_info:
+            await client.get_track_record()
+
+    assert exc_info.value.status_code == 429
+
+
+@pytest.mark.asyncio
 async def test_invalid_json_fails_closed() -> None:
     transport = httpx.MockTransport(
         lambda _request: httpx.Response(200, content=b"not-json", headers={"content-type": "application/json"})
