@@ -112,7 +112,7 @@ Unknown fields are rejected rather than ignored. Public signal status is a close
 pending | active | closed | expired
 ```
 
-The private projector must normalize internal lifecycle states such as `closed_win` or `closed_loss` into that public contract before publication.
+The private projector must normalize internal lifecycle states such as `closed_win` or `closed_loss` into that public contract before publication. A batch may contain each signal id at most once.
 
 For integration testing:
 
@@ -125,6 +125,8 @@ curren-publish examples/publication.example.json
 ### Replay and immutability rules
 
 For each signal id, Curren stores the publication source and latest `generated_at` watermark. A later-arriving batch with an equal/older watermark is counted as `stale_ignored` and cannot roll the public state backward.
+
+The first accepted public-availability schedule is retained for that signal id. A newer projection can update lifecycle/PnL state, but it cannot hide or accelerate an already scheduled public release by changing `public_available_at`.
 
 On first publication the API hashes immutable plan fields: signal id, symbol, side, publication timestamp, entry, stop, and target prices. Attempts to mutate them return HTTP `409`.
 
@@ -156,7 +158,7 @@ Clients send `Authorization: Bearer crn_...`.
 | Publication verification | once signal is visible | realtime |
 | Terminal outcome verification | for terminal signals | realtime |
 
-`CURREN_PUBLIC_DELAY_SECONDS` is an enforced **minimum** at the API boundary: a publisher may request a later public time but cannot shorten server policy.
+`CURREN_PUBLIC_DELAY_SECONDS` is an enforced **minimum** at the API boundary: a publisher may request a later public time on first publication but cannot shorten server policy.
 
 ## Rate limiting
 
@@ -170,7 +172,15 @@ Private ingestion     120 requests per ingestion credential
 
 Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset-After`. HTTP `429` includes `Retry-After`.
 
-Unknown/invalid read tokens do **not** receive their own buckets; they remain limited by peer IP so rotating bogus Bearer tokens cannot bypass the anonymous quota. Raw API keys are never used as bucket identifiers.
+Unknown/invalid read tokens do **not** receive their own buckets; they remain limited by client identity so rotating bogus Bearer tokens cannot bypass the anonymous quota. Raw API keys are never used as bucket identifiers.
+
+By default Curren ignores `X-Forwarded-For` and uses the direct ASGI peer. If the API sits behind a reverse proxy, explicitly allowlist only that trusted proxy IP/CIDR:
+
+```bash
+export CURREN_TRUSTED_PROXY_IPS='127.0.0.1/32,172.18.0.0/16'
+```
+
+Only an allowlisted direct peer may provide the forwarded client identity. The trusted proxy must overwrite/sanitize incoming forwarding headers.
 
 The built-in limiter is intentionally process-local. If you run multiple workers/replicas, enforce a global/distributed limit at the reverse proxy/API gateway as well.
 
@@ -258,6 +268,7 @@ These hashes detect mutation inside Curren's publication store. They are **not**
 | `CURREN_PUBLIC_RATE_LIMIT` | Anonymous requests/window | `60` |
 | `CURREN_AUTH_RATE_LIMIT` | Premium/Agent requests/key/window | `300` |
 | `CURREN_INGEST_RATE_LIMIT` | Publication requests/window | `120` |
+| `CURREN_TRUSTED_PROXY_IPS` | Trusted proxy IPs/CIDRs allowed to supply forwarded client IP | unset |
 | `CURREN_INGEST_TOKEN` | Protect/enable internal publication endpoint | unset = disabled |
 | `CURREN_API_KEYS_JSON` | API key → `premium`/`agent` mapping | `{}` |
 | `CURREN_API_HOST` | API bind host | `127.0.0.1` |
