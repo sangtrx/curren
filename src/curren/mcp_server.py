@@ -5,6 +5,8 @@ from typing import Any
 
 from curren.client import CurrenClient
 
+_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
 
 def _server():
     try:
@@ -77,7 +79,8 @@ def main() -> None:
     if transport == "stdio":
         mcp.run(transport="stdio")
         return
-    host = os.getenv("CURREN_MCP_HOST", "127.0.0.1")
+    host = os.getenv("CURREN_MCP_HOST", "127.0.0.1").strip()
+    _require_safe_http_host(host)
     port = int(os.getenv("CURREN_MCP_PORT", "8001"))
     mcp.run(
         transport="streamable-http",
@@ -86,6 +89,14 @@ def main() -> None:
         stateless_http=True,
         json_response=True,
     )
+
+
+def _require_safe_http_host(host: str) -> None:
+    if host not in _LOOPBACK_HOSTS:
+        raise SystemExit(
+            "Curren MCP v0.2 refuses non-loopback Streamable HTTP binds because the bundled MCP server has no "
+            "OAuth resource-server gate. Use stdio/localhost, or deploy a separately authenticated MCP gateway."
+        )
 
 
 if __name__ == "__main__":
