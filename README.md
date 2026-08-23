@@ -37,8 +37,7 @@ signal generation / AI guard / lifecycle / execution
                       v
                  Curren API
              /        |        \
-            /         |         \
-          CLI        MCP      Omarchy
+           CLI       MCP      Omarchy
 ```
 
 The publication flow is one-way. The public service has no endpoint for placing orders, changing trading controls, or writing back into the private runtime.
@@ -53,16 +52,14 @@ cp .env.example .env
 curren-api
 ```
 
-By default the API starts on `127.0.0.1:8000` with an empty read model. Empty means empty: this project never creates fake signals to make a demo look alive.
-
-Check it:
+The API starts on `127.0.0.1:8000` with an empty read model. Empty means empty: this project never creates fake signals to make a demo look alive.
 
 ```bash
 curl http://127.0.0.1:8000/healthz
 curl http://127.0.0.1:8000/v1/public/summary
 ```
 
-Or use Docker:
+Docker is also supported:
 
 ```bash
 docker compose up --build
@@ -106,21 +103,19 @@ A private runtime integration sends a sanitized `PublicationBatch`:
 }
 ```
 
-For integration testing, save that JSON to a file and run:
+For integration testing:
 
 ```bash
 export CURREN_API_URL='http://127.0.0.1:8000'
 export CURREN_INGEST_TOKEN='replace-with-a-long-random-secret'
-curren-publish publication.json
+curren-publish examples/publication.example.json
 ```
 
-On first ingestion the API records an immutable hash over the initial trade-plan fields: signal id, symbol, side, publication timestamp, entry, stop, and target prices. Later projections may update status, target-hit state, mark/PnL, close data, and append lifecycle events. Attempts to mutate the initial trade plan return HTTP `409`.
+On first ingestion the API records an immutable hash over signal id, symbol, side, publication timestamp, entry, stop, and target prices. Later projections may update lifecycle/result state but cannot rewrite the original trade plan; conflicts return HTTP `409`.
 
 ## Entitlements
 
-Missing credentials are treated as the public tier.
-
-Configure Premium/Agent API keys on the server with JSON:
+No read credential means `public` access. Premium/Agent keys are configured server-side:
 
 ```bash
 export CURREN_API_KEYS_JSON='{
@@ -129,13 +124,7 @@ export CURREN_API_KEYS_JSON='{
 }'
 ```
 
-Clients send:
-
-```text
-Authorization: Bearer crn_...
-```
-
-Policy in v0.2:
+Clients send `Authorization: Bearer crn_...`.
 
 | Data | Public | Premium / Agent |
 | --- | --- | --- |
@@ -145,9 +134,9 @@ Policy in v0.2:
 | Active entry/SL/TP prices | hidden | visible |
 | Active lifecycle event prices | hidden/delayed | visible realtime |
 | Track record | visible | visible |
-| Integrity record | visible once signal is visible | visible realtime |
+| Integrity record | once signal is visible | realtime |
 
-The default public delay is 1,800 seconds and is controlled by `CURREN_PUBLIC_DELAY_SECONDS` on the server. Delays are enforced before data leaves the API; clients are never asked to hide already-delivered realtime data.
+The default delay is 1,800 seconds. `CURREN_PUBLIC_DELAY_SECONDS` is an enforced **minimum** at the API boundary: a publisher may request a later public time but cannot shorten the server policy.
 
 ## CLI
 
@@ -165,7 +154,7 @@ curren track-record
 curren verify crn_sig_01
 ```
 
-Every read command supports structured JSON where useful. If the API omits a restricted field, the CLI prints it as unavailable; it never reconstructs levels.
+If the API omits a restricted field, the CLI reports it unavailable; it never reconstructs levels.
 
 ## MCP
 
@@ -175,7 +164,7 @@ Install the MCP extra:
 python -m pip install -e '.[mcp]'
 ```
 
-Local/stdio mode:
+For normal agent use, run over stdio:
 
 ```bash
 export CURREN_API_URL='https://api.curren.tech'
@@ -183,7 +172,7 @@ export CURREN_API_KEY='crn_...'
 curren-mcp
 ```
 
-The tool surface is deliberately small:
+Tools:
 
 - `curren_list_active_signals`
 - `curren_get_signal`
@@ -192,30 +181,26 @@ The tool surface is deliberately small:
 - `curren_get_track_record`
 - `curren_verify_signal`
 
-For a remote MCP endpoint:
+Local Streamable HTTP is available for development:
 
 ```bash
 export CURREN_MCP_TRANSPORT=streamable-http
-export CURREN_MCP_HOST=0.0.0.0
+export CURREN_MCP_HOST=127.0.0.1
 export CURREN_MCP_PORT=8001
 curren-mcp
 ```
 
-The HTTP mode uses MCP v2 Streamable HTTP in stateless JSON-response mode. MCP remains a thin adapter over the Curren API and exposes no execution tools.
+It uses MCP v2 stateless Streamable HTTP with JSON responses. The bundled v0.2 server deliberately rejects non-loopback HTTP binds because it does not yet ship an OAuth resource-server gate. Do not expose a paid upstream `CURREN_API_KEY` through an unauthenticated MCP endpoint; production remote MCP should sit behind a separately authenticated MCP resource server/gateway.
 
 ## Omarchy Quattro
 
-The repository root is a valid third-party Omarchy plugin:
+The repository root is a third-party Omarchy plugin:
 
 ```bash
 omarchy plugin add https://github.com/sangtrx/curren.git --enable
 ```
 
-It contains a single `bar-widget` entry point and reads only `/v1/public/summary`. It does not store API keys, exchange credentials, or execution permissions in QML.
-
-The API base URL is a plugin setting, so a development Omarchy machine can point at a local/staging API without editing the plugin source.
-
-Validate on Omarchy 4/Quattro:
+It exposes one `bar-widget`, reads only `/v1/public/summary`, and stores no API key, exchange credential, or execution permission in QML. `apiBaseUrl` is configurable for local/staging validation.
 
 ```bash
 omarchy plugin validate .
@@ -223,17 +208,17 @@ omarchy plugin validate .
 
 ## Verification semantics
 
-`curren verify <signal-id>` recomputes the SHA-256 hash of the initial publication snapshot stored by the Curren API. The server rejects later changes to those immutable trade-plan fields.
+`curren verify <signal-id>` recomputes the SHA-256 hash of the initial publication snapshot stored by the Curren API. The server rejects later changes to the immutable plan fields.
 
-This is useful for detecting mutation inside the Curren publication store, but it is **not** an independent timestamp authority, blockchain proof, profitability guarantee, or third-party notary. A future transparency-log/notary layer can build on the stored content hash without changing the client contract.
+This detects mutation inside Curren's publication store. It is **not** an independent timestamp authority, blockchain proof, profitability guarantee, or third-party notary.
 
 ## Environment
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `CURREN_DB_PATH` | Public read-model SQLite path | `./.local/curren.db` |
-| `CURREN_PUBLIC_DELAY_SECONDS` | Delay for active public visibility | `1800` |
-| `CURREN_INGEST_TOKEN` | Enables/protects internal publication endpoint | unset = disabled |
+| `CURREN_PUBLIC_DELAY_SECONDS` | Minimum delay for active public visibility | `1800` |
+| `CURREN_INGEST_TOKEN` | Protect/enable internal publication endpoint | unset = disabled |
 | `CURREN_API_KEYS_JSON` | API key → `premium`/`agent` mapping | `{}` |
 | `CURREN_API_HOST` | API bind host | `127.0.0.1` |
 | `CURREN_API_PORT` | API bind port | `8000` |
@@ -241,23 +226,14 @@ This is useful for detecting mutation inside the Curren publication store, but i
 | `CURREN_API_KEY` | Optional client entitlement token | unset |
 | `CURREN_TIMEOUT_SECONDS` | Client timeout | `10` |
 | `CURREN_MCP_TRANSPORT` | `stdio` or `streamable-http` | `stdio` |
-| `CURREN_MCP_HOST` | Remote MCP bind host | `127.0.0.1` |
-| `CURREN_MCP_PORT` | Remote MCP port | `8001` |
+| `CURREN_MCP_HOST` | Local HTTP bind host | `127.0.0.1` |
+| `CURREN_MCP_PORT` | Local HTTP port | `8001` |
 
 ## Security boundary
 
-This repository intentionally does **not** publish:
+This repository intentionally does **not** publish raw source messages/identifiers, strategy/scoring code, model artifacts/features, private runtime DB credentials, trade intents, venue/account state, exchange credentials, kill switches, or operator secrets.
 
-- raw Discord/source messages or source identifiers
-- strategy/scoring implementation
-- model features, model artifacts, or private AI-guard decisions
-- private production database credentials
-- trade intents, venue orders, account state, or exchange credentials
-- kill switches, operator controls, or deployment secrets
-
-The ingestion endpoint accepts only the sanitized public contract and is disabled unless `CURREN_INGEST_TOKEN` is configured. API-key entitlements are enforced server-side using header credentials, never query-string secrets.
-
-For internet deployment, terminate TLS and enforce network/rate controls at the reverse proxy/load balancer. Keep `/internal/v1/publications` reachable only from the private publisher network in addition to using its bearer token.
+The ingestion endpoint is disabled unless `CURREN_INGEST_TOKEN` is configured. Read entitlements use header credentials, never query-string secrets. For internet deployment, terminate TLS, add ingress rate limits, and network-restrict `/internal/v1/publications` in addition to its bearer token.
 
 ## Development
 
@@ -268,12 +244,7 @@ ruff check .
 python -m build
 ```
 
-See:
-
-- [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md)
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
-- [`SECURITY.md`](SECURITY.md)
+See [`docs/API_CONTRACT.md`](docs/API_CONTRACT.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md), [`SECURITY.md`](SECURITY.md), and [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
 
