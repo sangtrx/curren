@@ -1,14 +1,14 @@
 # Curren API Contract
 
-This document defines the v1 external read contract and the strict private-to-public publication contract implemented by Curren v0.3.
+This document defines the v1 external read contract and the strict private-to-public publication contract implemented by Curren v0.4.
 
 ## Boundary
 
-The Curren API is a publication/read-model boundary, not a façade over the private production trading database.
+The Curren API is a publication/read-model boundary, not a facade over the private production trading database.
 
-The private runtime sends a sanitized projection outward. The public service persists only fields required by public/Premium/Agent clients. It has no order-placement, exchange-account, trading-control, or execution endpoints.
+The private runtime sends a sanitized projection outward. The public service persists only fields required by Public/Premium/Agent clients. It has no order-placement, exchange-account, trading-control, or execution endpoint.
 
-Publication payloads must never contain raw source messages, private source identifiers, model features/artifacts, trade intents, exchange credentials, account state, or operator secrets. Unknown publication fields are rejected with HTTP `422` rather than silently ignored.
+Publication payloads must never contain raw source messages, private source identifiers, model features/artifacts, trade intents, exchange credentials, account state, or operator secrets. Unknown publication fields are rejected with HTTP `422`.
 
 ## Authentication and rate limits
 
@@ -18,33 +18,33 @@ Read requests may use:
 Authorization: Bearer crn_...
 ```
 
-No header means `public` access. Configured API keys map to `premium` or `agent`. Unknown keys fail with HTTP `401`.
+No header means `public`. Configured keys map to `premium` or `agent`. Unknown keys fail with HTTP `401`.
 
-The ingestion endpoint uses a separate `CURREN_INGEST_TOKEN`; if unset, ingestion is disabled with HTTP `503`.
+Private ingestion uses a separate `CURREN_INGEST_TOKEN`; if unset, ingestion is disabled with HTTP `503`.
 
-The application-level limiter defaults to a 60-second window:
+Default application limiter window is 60 seconds:
 
-- public/anonymous: 60 requests per peer IP
-- Premium/Agent: 300 requests per valid API key
-- ingestion: 120 requests per valid ingestion credential
+- public/anonymous: 60 requests per resolved client identity;
+- Premium/Agent: 300 requests per valid API key;
+- ingestion: 120 requests per valid ingestion credential.
 
-Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset-After`; `429` responses include `Retry-After`.
+Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and `X-RateLimit-Reset-After`; `429` also includes `Retry-After`.
 
-Invalid/unknown read tokens are still bucketed by peer IP, so rotating bogus tokens does not bypass the anonymous quota. The built-in limiter is process-local; multi-worker/replica deployments also need a global ingress limit.
+Invalid/unknown read tokens stay in the anonymous client bucket. Forwarded client IP is considered only when the direct peer is allowlisted by `CURREN_TRUSTED_PROXY_IPS`; the server walks the forwarding chain from right to left and skips only trusted proxy hops. Multi-worker/replica deployments still require a global ingress quota.
 
 ## Read endpoints
 
 ### `GET /healthz`
 
-Health checks are not rate limited.
+Health is intentionally minimal and not application-rate-limited:
 
 ```json
 {
-  "status": "ok",
-  "signals": 12,
-  "ingestion_enabled": true
+  "status": "ok"
 }
 ```
+
+It does not expose database row counts, ingestion state, hidden signal activity, credentials, or operator metadata.
 
 ### `GET /v1/public/summary`
 
@@ -59,37 +59,35 @@ Anonymous proof surface used by Omarchy.
 }
 ```
 
-`active_count` counts only active signals already visible under the public delay policy. It does not leak hidden realtime signal count.
+`active_count` counts only active signals already visible under the public delay policy. It does not leak hidden realtime signal count. `recent_results` contains only terminal rows backed by immutable outcome records.
 
 ### `GET /v1/signals`
 
 Query parameters:
 
-- `status`: `pending | active | closed | expired`, default `active`
-- `symbol=<SYMBOL>` optional
-- `limit=1..100`
+- `status`: `pending | active | closed | expired`, default `active`;
+- `symbol=<SYMBOL>` optional;
+- `limit=1..100`.
 
-Public pending/active records are visible only after `public_available_at` and omit entry, stop, target prices, and lifecycle prices. Premium/Agent records are realtime and include those fields when the publisher supplied them.
-
-Terminal records are full public proof.
+Public pending/active rows appear only after their established `public_available_at` and omit entry, stop, target prices, and active lifecycle prices. Premium/Agent rows are realtime and include stored exact levels.
 
 ### `GET /v1/signals/{signal_id}`
 
-Returns one visible signal projection.
+Returns one visible signal projection. Signal IDs accept only letters, digits, `.`, `_`, `:`, and `-`, up to 128 characters.
 
 ### `GET /v1/signals/{signal_id}/lifecycle`
 
-Returns stored lifecycle events in chronological order. Public active lifecycle is delayed and omits event prices. Premium/Agent sees stored lifecycle realtime. Terminal signals expose stored lifecycle publicly.
+Returns lifecycle events chronologically. Public active lifecycle is delayed and omits event prices. Premium/Agent sees stored lifecycle realtime. Terminal signals expose stored lifecycle publicly.
 
-Lifecycle event identity is `(signal_id, event_type, event_at)`. A later publication that reuses that identity with different `price` or `r_multiple` is rejected with HTTP `409`.
+Lifecycle identity is `(signal_id, event_type, event_at)`. Reusing an identity with different `price` or `r_multiple` returns HTTP `409`.
 
 ### `GET /v1/results`
 
-Returns recent `closed`/`expired` projections using the same `Signal` schema.
+Returns recent terminal projections **only when an immutable outcome record exists**. Legacy/migrated terminal signal rows without an outcome proof are deliberately excluded rather than presented as verified results.
 
 ### `GET /v1/track-record`
 
-Track record is derived from immutable terminal outcome records with non-null `realized_r`, not mutable signal rows.
+Track record is derived only from immutable `closed` outcome records with non-null `realized_r`, not mutable signal rows.
 
 ```json
 {
@@ -125,9 +123,9 @@ Active example:
 }
 ```
 
-After closure/expiry, the same response also carries the immutable outcome hash and verification fields.
+After closure/expiry the response also carries outcome integrity fields.
 
-These hashes verify integrity inside Curren's publication store. They are not an independent timestamp authority, blockchain proof, exchange attestation, profitability guarantee, or third-party notary.
+These hashes verify Curren-owned stored records. They are not an independent timestamp authority, blockchain proof, exchange attestation, profitability guarantee, or third-party notary.
 
 ## Publication endpoint
 
@@ -190,67 +188,67 @@ Response:
 
 ## Publication validation
 
-Public signal status is a closed set:
+Signal status is:
 
 ```text
 pending | active | closed | expired
 ```
 
-The private projector must map internal states such as `closed_win`, `closed_loss`, or other runtime-specific terminal values to this contract before sending them.
+The private projector must normalize runtime-specific statuses before publication. Current Woodsbot terminal variants such as `closed_win`, `closed_loss`, `closed_be`, `closed_partial_win`, and `manual_close` map to public `closed`; `expired` remains `expired`.
 
-All timestamps must be timezone-aware. `generated_at` must not predate the latest projected signal/lifecycle/target-hit state. Terminal records require `closed_at`; `closed` records also require `realized_r`. Non-terminal records cannot carry terminal outcome fields.
+Target status is:
 
-Prices must be positive/finite; R values must be finite.
+```text
+pending | hit
+```
+
+A `hit` target requires `hit_at`. A `pending` target cannot contain `hit_at`.
+
+All timestamps must be timezone-aware. `generated_at` must not predate any state represented by the batch and must not exceed server time by more than `CURREN_MAX_CLOCK_SKEW_SECONDS` (default 300 seconds). This prevents a bad future timestamp from poisoning the replay watermark.
+
+Terminal rows require `closed_at`; `closed` also requires `realized_r`. Non-terminal rows cannot carry terminal outcome fields. Prices must be positive/finite and R values finite.
 
 ## Replay ordering
 
-Each signal row stores:
+Each signal stores its publication `source` and latest accepted `source_generated_at`.
 
-- publication `source`
-- latest accepted `source_generated_at`
+An equal/older `generated_at` for the same signal is `stale_ignored`; it cannot roll mark/R/status/lifecycle state backward. A signal id cannot switch source after ownership is established.
 
-Once a signal has an accepted projection, an equal/older `generated_at` for that same signal is treated as a stale replay and counted as `stale_ignored`. It cannot roll mark/R/status/lifecycle state backward.
+Publishers should send cumulative state projections and generate a fresh `generated_at` only for a new committed state snapshot.
 
-A signal id cannot change publication source after the source has been established.
-
-Publishers should send cumulative state projections and generate a fresh `generated_at` for each new state snapshot. Retrying the exact same committed batch is safe; it will be ignored as stale.
-
-## Immutable initial publication
+## Immutable initial publication and availability schedule
 
 On first ingestion Curren canonicalizes and hashes:
 
-- signal id
-- symbol
-- side
-- `published_at`
-- entry price
-- stop price
-- ordered target prices
-- record version
+- signal id;
+- symbol;
+- side;
+- `published_at`;
+- entry;
+- stop;
+- ordered target prices;
+- record version.
 
-A newer conflicting projection returns HTTP `409`.
+A conflicting newer projection returns HTTP `409`.
 
-Mutable while live:
+The first server-enforced `public_available_at` is also retained for that signal id. Later snapshots cannot accelerate or hide a signal by changing that clock.
 
-- public availability time, subject to the server minimum delay
-- target hit status/timestamps, with prices fixed
-- mark/current R/peak R
-- append-only lifecycle events
+While live, mutable projection fields are target hit status/timestamp (target prices fixed), mark/current R/peak R, and new append-only lifecycle events.
 
-## Immutable terminal outcome
+## Immutable terminal outcome and result projection
 
 When a signal first becomes `closed` or `expired`, Curren records a separate canonical outcome hash over:
 
-- signal id
-- terminal status
-- `realized_r`
-- `closed_at`
-- `exit_reason`
-- outcome record version
+- signal id;
+- terminal status;
+- `realized_r`;
+- `closed_at`;
+- `exit_reason`;
+- outcome record version.
 
-After that, the signal cannot return to a live state and those terminal outcome fields cannot be rewritten under the same signal id. Conflicts return HTTP `409` atomically.
+That first terminal snapshot also freezes the public terminal result projection (target hit state, mark/current R/peak R, outcome fields). A newer cumulative snapshot may add previously unseen lifecycle events but cannot rewrite already-published terminal result context. Conflicts return HTTP `409` atomically.
 
-Current versions:
+Current record versions:
 
 ```text
 signal-publication.v1
@@ -259,11 +257,11 @@ signal-outcome.v1
 
 ## Clock meanings
 
-- `generated_at`: when the private projector produced the outgoing batch; also the per-signal replay watermark.
-- `published_at`: immutable signal-publication time supplied by the private runtime.
-- `recorded_at`: when the public read model first stored an immutable record.
-- `public_available_at`: when a live signal becomes public/delayed data.
-- `available_at`: representation availability for the current caller.
+- `generated_at`: projector snapshot time and per-signal replay watermark;
+- `published_at`: immutable signal publication clock from the private runtime;
+- `recorded_at`: public read-model persistence clock for an immutable record;
+- `public_available_at`: first established public/delayed availability for a live signal;
+- `available_at`: representation availability for the current caller;
 - `closed_at`: terminal outcome time.
 
-The server enforces `CURREN_PUBLIC_DELAY_SECONDS` as a minimum before response serialization.
+The server enforces `CURREN_PUBLIC_DELAY_SECONDS` as a minimum before public live visibility.
