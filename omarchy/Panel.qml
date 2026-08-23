@@ -27,7 +27,13 @@ Panel {
   property double lastSuccessAt: 0
   property bool requestInFlight: false
 
-  readonly property string summaryUrl: "https://api.curren.tech/v1/public/summary"
+  readonly property string apiBaseUrl: {
+    var candidate = root.settings && root.settings.apiBaseUrl ? String(root.settings.apiBaseUrl).trim() : ""
+    if (!candidate) candidate = "https://api.curren.tech"
+    while (candidate.length > 0 && candidate.charAt(candidate.length - 1) === "/") candidate = candidate.slice(0, -1)
+    return candidate
+  }
+  readonly property string summaryUrl: root.apiBaseUrl + "/v1/public/summary"
 
   function openFromHotkey() { root.controller.show(); refreshIfStale() }
   function open() { root.controller.show(); refreshIfStale() }
@@ -227,7 +233,7 @@ Panel {
               Column {
                 anchors.verticalCenter: parent.verticalCenter
                 CurrenText { text: String(root.activeCount); font.pixelSize: Style.font.heading; font.bold: true }
-                MutedText { text: "ACTIVE SIGNALS"; font.bold: true }
+                MutedText { text: "VISIBLE ACTIVE"; font.bold: true }
               }
 
               Item { width: Math.max(0, parent.width - Style.space(180)); height: 1 }
@@ -269,7 +275,7 @@ Panel {
 
           MutedText {
             width: parent.width
-            text: "Public proof surface only · no exchange credentials · no trade execution"
+            text: "Public/delayed proof only · no exchange credentials · no trade execution"
             horizontalAlignment: Text.AlignHCenter
           }
         }
