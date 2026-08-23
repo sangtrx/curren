@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      CURREN_DB_PATH: /data/curren.db
+      CURREN_API_HOST: 0.0.0.0
+      CURREN_API_PORT: 8000
+      CURREN_PUBLIC_DELAY_SECONDS: ${CURREN_PUBLIC_DELAY_SECONDS:-1800}
+      CURREN_INGEST_TOKEN: ${CURREN_INGEST_TOKEN:-}
+      CURREN_API_KEYS_JSON: '${CURREN_API_KEYS_JSON:-{}}'
+    volumes:
+      - curren-data:/data
+
+volumes:
+  curren-data:
