@@ -6,8 +6,9 @@ import pytest
 from curren.server import create_app
 
 
-async def _client(app) -> httpx.AsyncClient:
-    return httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test")
+async def _client(app, *, peer: str = "127.0.0.1") -> httpx.AsyncClient:
+    transport = httpx.ASGITransport(app=app, client=(peer, 12345))
+    return httpx.AsyncClient(transport=transport, base_url="http://test")
 
 
 @pytest.mark.asyncio
@@ -66,6 +67,42 @@ async def test_rotating_invalid_tokens_cannot_bypass_public_peer_limit(tmp_path)
 
     assert first.status_code == 401
     assert second.status_code == 429
+
+
+@pytest.mark.asyncio
+async def test_forwarded_ip_is_ignored_from_untrusted_peer(tmp_path) -> None:
+    app = create_app(
+        database_path=str(tmp_path / "curren.db"),
+        public_rate_limit=1,
+    )
+
+    async with await _client(app) as client:
+        first = await client.get("/v1/public/summary", headers={"X-Forwarded-For": "203.0.113.10"})
+        second = await client.get("/v1/public/summary", headers={"X-Forwarded-For": "203.0.113.11"})
+
+    assert first.status_code == 200
+    assert second.status_code == 429
+
+
+@pytest.mark.asyncio
+async def test_allowlisted_proxy_can_supply_sanitized_forwarded_client_ip(tmp_path) -> None:
+    app = create_app(
+        database_path=str(tmp_path / "curren.db"),
+        public_rate_limit=1,
+        trusted_proxy_ips="127.0.0.1/32",
+    )
+
+    async with await _client(app, peer="127.0.0.1") as client:
+        first_client = await client.get("/v1/public/summary", headers={"X-Forwarded-For": "203.0.113.10"})
+        second_client = await client.get("/v1/public/summary", headers={"X-Forwarded-For": "203.0.113.11"})
+        first_client_again = await client.get(
+            "/v1/public/summary",
+            headers={"X-Forwarded-For": "203.0.113.10"},
+        )
+
+    assert first_client.status_code == 200
+    assert second_client.status_code == 200
+    assert first_client_again.status_code == 429
 
 
 @pytest.mark.asyncio
