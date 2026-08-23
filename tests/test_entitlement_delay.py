@@ -16,14 +16,14 @@ async def test_public_delay_hides_known_signal_id_while_premium_can_read(tmp_pat
     )
     payload = {
         "source": "test-runtime",
-        "generated_at": "2026-08-23T12:00:05Z",
+        "generated_at": "2026-08-23T15:00:05Z",
         "signals": [
             {
                 "id": "crn_sig_hidden",
                 "symbol": "BTCUSDT",
                 "side": "short",
                 "status": "active",
-                "published_at": "2026-08-23T12:00:00Z",
+                "published_at": "2026-08-23T15:00:00Z",
                 "public_available_at": "2099-01-01T00:00:00Z",
                 "entry": 100000.0,
                 "stop": 101000.0,
@@ -62,15 +62,15 @@ async def test_server_policy_prevents_publisher_from_shortening_public_delay(tmp
     )
     payload = {
         "source": "test-runtime",
-        "generated_at": "2099-01-01T00:00:01Z",
+        "generated_at": "2026-08-23T15:00:01Z",
         "signals": [
             {
                 "id": "crn_sig_delay_floor",
                 "symbol": "ETHUSDT",
                 "side": "long",
                 "status": "active",
-                "published_at": "2099-01-01T00:00:00Z",
-                "public_available_at": "2099-01-01T00:00:00Z",
+                "published_at": "2026-08-23T15:00:00Z",
+                "public_available_at": "2026-08-23T15:00:00Z",
                 "entry": 5000.0,
                 "stop": 4900.0,
                 "targets": [{"price": 5100.0}],
