@@ -398,6 +398,10 @@ class ReadStore:
                 return False, True, 0, False
             if existing_signal["status"].lower() in TERMINAL_STATUSES and signal.status.value not in TERMINAL_STATUSES:
                 raise PublicationConflict(f"terminal signal cannot return to a live state for {signal.id}")
+            # Public availability is part of the first-publication schedule. A newer
+            # projection may update lifecycle/PnL state but cannot hide or accelerate
+            # an already-published signal by changing its public availability clock.
+            public_available_at = _parse_time(existing_signal["public_available_at"])
 
         immutable_json = _canonical_snapshot(signal)
         content_hash = hashlib.sha256(immutable_json.encode("utf-8")).hexdigest()
