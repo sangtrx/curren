@@ -40,7 +40,7 @@ class PublicationClient:
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {resolved_token}",
-                "User-Agent": "curren-publisher/0.3.0",
+                "User-Agent": "curren-publisher/0.4.0",
             },
             timeout=timeout_seconds,
             transport=transport,
