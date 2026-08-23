@@ -57,6 +57,22 @@ async def test_client_sends_bearer_token_without_putting_it_in_url() -> None:
 
 
 @pytest.mark.asyncio
+async def test_client_rejects_unsafe_signal_id_before_request() -> None:
+    called = False
+
+    async def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal called
+        called = True
+        return httpx.Response(200, json={})
+
+    async with CurrenClient(base_url="https://example.test", transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(ValueError, match="invalid signal id"):
+            await client.get_signal("sig?leak=true")
+
+    assert called is False
+
+
+@pytest.mark.asyncio
 async def test_entitlement_failure_is_explicit() -> None:
     transport = httpx.MockTransport(lambda _request: httpx.Response(403, json={"detail": "forbidden"}))
     async with CurrenClient(base_url="https://example.test", transport=transport) as client:
