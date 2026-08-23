@@ -11,7 +11,7 @@ def test_repo_root_is_an_omarchy_plugin() -> None:
 
     assert manifest["schemaVersion"] == 1
     assert manifest["id"] == "tech.curren.signals"
-    assert manifest["version"] == "0.2.0"
+    assert manifest["version"] == "0.3.0"
     assert "bar-widget" in manifest["kinds"]
     entry_point = REPO_ROOT / manifest["entryPoints"]["barWidget"]
     assert entry_point.is_file()
