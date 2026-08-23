@@ -164,19 +164,31 @@ def verify(
     signal_id: str,
     json_output: bool = typer.Option(False, "--json"),
 ) -> None:
-    """Verify integrity of Curren's recorded initial publication snapshot."""
+    """Verify Curren's immutable initial plan and terminal outcome records."""
     record = _run(_verify(signal_id))
     if json_output:
         _echo_json(record.model_dump(mode="json"))
         return
-    state = "VERIFIED" if record.verified else "NOT VERIFIED"
-    typer.echo(f"{state} {record.signal_id}")
+
+    plan_state = "PLAN VERIFIED" if record.verified else "PLAN NOT VERIFIED"
+    typer.echo(f"{plan_state} · {record.signal_id}")
     typer.echo(f"Published : {_time(record.published_at)}")
     typer.echo(f"Recorded  : {_time(record.recorded_at)}")
-    typer.echo(f"Hash      : {record.content_hash}")
+    typer.echo(f"Plan hash : {record.content_hash}")
     if record.record_version:
-        typer.echo(f"Version   : {record.record_version}")
-    typer.echo("Integrity check is against Curren's recorded snapshot; it is not an independent oracle/notary.")
+        typer.echo(f"Plan ver  : {record.record_version}")
+
+    if record.outcome_verified is None:
+        typer.echo("Outcome   : not recorded yet")
+    else:
+        outcome_state = "OUTCOME VERIFIED" if record.outcome_verified else "OUTCOME NOT VERIFIED"
+        typer.echo(f"{outcome_state}")
+        typer.echo(f"Outcome at: {_time(record.outcome_recorded_at)}")
+        typer.echo(f"Outcome hash: {_value(record.outcome_content_hash)}")
+        if record.outcome_record_version:
+            typer.echo(f"Outcome ver : {record.outcome_record_version}")
+
+    typer.echo("Hashes verify Curren-owned records; they are not an independent oracle/notary or profitability proof.")
 
 
 def _print_signals(items: list[Signal]) -> None:
