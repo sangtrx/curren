@@ -81,11 +81,19 @@ def _closed_payload(active_payload: dict, *, realized_r: float = 2.0, generated_
 
 
 @pytest.mark.asyncio
-async def test_health_starts_empty(app) -> None:
+async def test_health_is_minimal_and_does_not_leak_hidden_signal_count(app, active_payload) -> None:
     async with await _client(app) as client:
-        response = await client.get("/healthz")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok", "signals": 0, "ingestion_enabled": True}
+        before = await client.get("/healthz")
+        await client.post(
+            "/internal/v1/publications",
+            json=active_payload,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        after = await client.get("/healthz")
+
+    assert before.status_code == 200
+    assert before.json() == {"status": "ok"}
+    assert after.json() == {"status": "ok"}
 
 
 @pytest.mark.asyncio
@@ -227,6 +235,34 @@ async def test_terminal_outcome_mutation_is_rejected_and_track_record_stays_lock
 
 
 @pytest.mark.asyncio
+async def test_terminal_projection_context_cannot_be_rewritten_after_close(app, active_payload) -> None:
+    closed = _closed_payload(active_payload)
+    changed = _closed_payload(active_payload, generated_at="2026-08-23T12:21:00Z")
+    changed["signals"][0]["mark"] = 45.0
+    changed["signals"][0]["peak_r"] = 3.0
+
+    async with await _client(app) as client:
+        await client.post(
+            "/internal/v1/publications",
+            json=active_payload,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        await client.post(
+            "/internal/v1/publications",
+            json=closed,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        conflict = await client.post(
+            "/internal/v1/publications",
+            json=changed,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+
+    assert conflict.status_code == 409
+    assert "immutable terminal projection changed" in conflict.json()["detail"]
+
+
+@pytest.mark.asyncio
 async def test_stale_projection_is_ignored_without_rolling_back_state(app, active_payload) -> None:
     newer = {**active_payload, "generated_at": "2026-08-23T12:11:00Z"}
     newer["signals"] = [dict(active_payload["signals"][0])]
@@ -260,6 +296,26 @@ async def test_stale_projection_is_ignored_without_rolling_back_state(app, activ
     assert second.json()["updated"] == 0
     assert visible.json()["mark"] == 43.8
     assert visible.json()["current_r"] == 1.3
+
+
+@pytest.mark.asyncio
+async def test_far_future_generated_at_is_rejected_before_it_can_poison_watermark(tmp_path, active_payload) -> None:
+    future = {**active_payload, "generated_at": "2099-01-01T00:00:00Z"}
+    app = create_app(
+        database_path=str(tmp_path / "curren.db"),
+        ingest_token="ingest-secret",
+        max_clock_skew_seconds=300,
+    )
+
+    async with await _client(app) as client:
+        response = await client.post(
+            "/internal/v1/publications",
+            json=future,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+
+    assert response.status_code == 422
+    assert "future clock skew" in response.json()["detail"]
 
 
 @pytest.mark.asyncio
