@@ -37,7 +37,7 @@ class CurrenClient:
 
         headers = {
             "Accept": "application/json",
-            "User-Agent": "curren-python/0.2.0",
+            "User-Agent": "curren-python/0.3.0",
         }
         if resolved_key:
             headers["Authorization"] = f"Bearer {resolved_key}"
@@ -106,6 +106,10 @@ class CurrenClient:
             raise CurrenError("Curren API entitlement does not allow this request", status_code=response.status_code)
         if response.status_code == 404:
             raise CurrenError("Curren resource was not found", status_code=404)
+        if response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
+            suffix = f"; retry after {retry_after}s" if retry_after else ""
+            raise CurrenError(f"Curren API rate limit exceeded{suffix}", status_code=429)
         if response.status_code >= 400:
             raise CurrenError(f"Curren API returned HTTP {response.status_code}", status_code=response.status_code)
 
@@ -123,6 +127,6 @@ def _bounded_limit(limit: int) -> int:
 
 def _safe_id(value: str) -> str:
     value = value.strip()
-    if not value or "/" in value or ".." in value:
+    if not value or len(value) > 128 or "/" in value or ".." in value:
         raise ValueError("invalid signal id")
     return value
