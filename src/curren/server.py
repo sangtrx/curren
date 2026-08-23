@@ -5,6 +5,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
@@ -170,7 +171,7 @@ def create_app(
     )
     def ingest(batch: PublicationBatch) -> IngestResult:
         try:
-            return store.ingest(batch)
+            return store.ingest(_enforce_public_delay(batch, config.public_delay_seconds))
         except PublicationConflict as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
         except ValueError as exc:
@@ -188,6 +189,17 @@ def main() -> None:
     host = os.getenv("CURREN_API_HOST", "127.0.0.1")
     port = int(os.getenv("CURREN_API_PORT", "8000"))
     uvicorn.run(create_app(), host=host, port=port, log_level=os.getenv("CURREN_LOG_LEVEL", "info"))
+
+
+def _enforce_public_delay(batch: PublicationBatch, delay_seconds: int) -> PublicationBatch:
+    delay = timedelta(seconds=max(0, int(delay_seconds)))
+    signals = []
+    for signal in batch.signals:
+        floor = signal.published_at + delay
+        requested = signal.public_available_at
+        public_available_at = max(requested, floor) if requested is not None else floor
+        signals.append(signal.model_copy(update={"public_available_at": public_available_at}))
+    return batch.model_copy(update={"signals": signals})
 
 
 def _parse_api_keys(raw: str) -> dict[str, str]:
