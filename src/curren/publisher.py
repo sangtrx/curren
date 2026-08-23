@@ -40,7 +40,7 @@ class PublicationClient:
                 "Accept": "application/json",
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {resolved_token}",
-                "User-Agent": "curren-publisher/0.2.0",
+                "User-Agent": "curren-publisher/0.3.0",
             },
             timeout=timeout_seconds,
             transport=transport,
@@ -65,8 +65,10 @@ class PublicationClient:
             raise CurrenError("Curren publication request failed") from exc
         if response.status_code >= 400:
             detail = _response_detail(response)
+            retry_after = response.headers.get("Retry-After")
+            retry = f"; retry after {retry_after}s" if response.status_code == 429 and retry_after else ""
             raise CurrenError(
-                f"Curren publication rejected with HTTP {response.status_code}: {detail}",
+                f"Curren publication rejected with HTTP {response.status_code}: {detail}{retry}",
                 status_code=response.status_code,
             )
         try:
