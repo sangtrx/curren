@@ -41,6 +41,7 @@ docker run --rm \
   -e CURREN_PUBLIC_RATE_LIMIT=60 \
   -e CURREN_AUTH_RATE_LIMIT=300 \
   -e CURREN_INGEST_RATE_LIMIT=120 \
+  -e CURREN_TRUSTED_PROXY_IPS='' \
   -e CURREN_API_KEYS_JSON='{"crn_premium_example":"premium"}' \
   curren-api:0.3.0
 ```
@@ -76,7 +77,7 @@ Back up SQLite with a SQLite-safe online backup method or while the service is s
 
 The API has a bounded single-process limiter. Defaults are per 60-second window:
 
-- anonymous/public: 60 per peer IP
+- anonymous/public: 60 per resolved client identity
 - Premium/Agent: 300 per valid API key
 - ingestion: 120 per valid ingestion token
 
@@ -87,11 +88,20 @@ CURREN_RATE_LIMIT_WINDOW_SECONDS
 CURREN_PUBLIC_RATE_LIMIT
 CURREN_AUTH_RATE_LIMIT
 CURREN_INGEST_RATE_LIMIT
+CURREN_TRUSTED_PROXY_IPS
 ```
 
-This limiter is a local guard, not a distributed quota authority. If you run multiple Uvicorn workers or replicas, each process has its own counters. Enforce the global policy at trusted ingress as well.
+By default `CURREN_TRUSTED_PROXY_IPS` is empty. In that mode Curren ignores `X-Forwarded-For` and uses the direct ASGI peer, preventing clients from spoofing new rate-limit identities.
 
-Do not rely on client-supplied `X-Forwarded-For` inside the application limiter. The app deliberately buckets anonymous traffic by its direct ASGI peer. A trusted reverse proxy should implement external/client-IP policy itself.
+If the API sits behind a trusted proxy, explicitly allowlist that proxy IP or CIDR, for example:
+
+```bash
+export CURREN_TRUSTED_PROXY_IPS='127.0.0.1/32,172.18.0.0/16'
+```
+
+Only when the direct peer matches an allowlisted network does Curren accept the left-most `X-Forwarded-For` address as the anonymous client identity. The trusted proxy **must overwrite/sanitize** incoming forwarding headers; do not configure an untrusted network here.
+
+This limiter is a local guard, not a distributed quota authority. If you run multiple Uvicorn workers or replicas, each process has its own counters. Enforce the global policy at trusted ingress as well.
 
 ### Health check
 
@@ -115,6 +125,7 @@ Health checks are not application-rate-limited. A healthy empty database is vali
 | `CURREN_PUBLIC_RATE_LIMIT` | anonymous requests/window |
 | `CURREN_AUTH_RATE_LIMIT` | Premium/Agent requests/key/window |
 | `CURREN_INGEST_RATE_LIMIT` | publisher requests/window |
+| `CURREN_TRUSTED_PROXY_IPS` | comma-separated trusted proxy IPs/CIDRs; empty by default |
 | `CURREN_INGEST_TOKEN` | long random secret, private publisher only |
 | `CURREN_API_KEYS_JSON` | server-side machine entitlements |
 | `CURREN_LOG_LEVEL` | `info` normally |
@@ -132,6 +143,9 @@ Publisher requirements:
 3. Include cumulative lifecycle state expected downstream.
 4. Normalize private statuses to `pending | active | closed | expired`.
 5. Never send private/source/model/account/execution fields; strict validation rejects them.
+6. Do not expect to change `public_available_at` after the first accepted publication; the original schedule is retained.
+
+A single batch may contain each signal id at most once.
 
 Conflicts return HTTP `409` when a newer projection attempts to rewrite:
 
