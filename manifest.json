@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "tech.curren.signals",
   "name": "Curren Signals",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "Curren",
   "license": "MIT",
-  "description": "Native Curren signal status and verifiable results for Omarchy Quattro.",
+  "description": "Native Curren delayed signal status and proof-backed results for Omarchy Quattro.",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "Curren Signals",
-    "description": "Curren active-signal status and public proof/results.",
+    "description": "Delayed active-signal context and proof-backed Curren results.",
     "category": "Finance",
     "allowMultiple": false,
     "defaultSection": "right",
