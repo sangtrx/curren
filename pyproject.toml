@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "curren"
-version = "0.2.0"
-description = "Curren API, CLI, MCP server, Omarchy integration, and public trading-intelligence contracts"
+version = "0.3.0"
+description = "Curren API, CLI, MCP server, Omarchy integration, and verifiable trading-intelligence contracts"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
