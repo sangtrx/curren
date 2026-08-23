@@ -199,6 +199,9 @@ class ReadStore:
         clauses = ["LOWER(status) = ?"]
         parameters: list[Any] = [normalized_status]
 
+        if normalized_status in TERMINAL_STATUSES:
+            clauses.append("EXISTS (SELECT 1 FROM outcome_records AS o WHERE o.signal_id = signals.id)")
+
         if symbol:
             clauses.append("symbol = ?")
             parameters.append(symbol.upper())
@@ -244,7 +247,17 @@ class ReadStore:
         now = _utc(now or datetime.now(UTC))
         with self._connect() as connection:
             row = connection.execute("SELECT * FROM signals WHERE id = ?", (signal_id,)).fetchone()
-        if row is None or not self._row_visible(row, policy=policy, now=now):
+            has_outcome = False
+            if row is not None and row["status"].lower() in TERMINAL_STATUSES:
+                has_outcome = (
+                    connection.execute("SELECT 1 FROM outcome_records WHERE signal_id = ?", (signal_id,)).fetchone()
+                    is not None
+                )
+        if row is None:
+            raise SignalNotFound(signal_id)
+        if row["status"].lower() in TERMINAL_STATUSES and not has_outcome:
+            raise SignalNotFound(signal_id)
+        if not self._row_visible(row, policy=policy, now=now):
             raise SignalNotFound(signal_id)
         return self._signal_from_row(row, policy=policy)
 
