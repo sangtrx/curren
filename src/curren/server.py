@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hmac
+import ipaddress
 import json
 import os
 import re
@@ -39,6 +40,7 @@ class ServerConfig:
     public_rate_limit: int
     authenticated_rate_limit: int
     ingest_rate_limit: int
+    trusted_proxy_networks: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]
 
     @classmethod
     def from_env(cls) -> ServerConfig:
@@ -51,6 +53,7 @@ class ServerConfig:
             public_rate_limit=_positive_int_env("CURREN_PUBLIC_RATE_LIMIT", 60),
             authenticated_rate_limit=_positive_int_env("CURREN_AUTH_RATE_LIMIT", 300),
             ingest_rate_limit=_positive_int_env("CURREN_INGEST_RATE_LIMIT", 120),
+            trusted_proxy_networks=_parse_trusted_proxy_networks(os.getenv("CURREN_TRUSTED_PROXY_IPS", "")),
         )
 
 
@@ -64,6 +67,7 @@ def create_app(
     public_rate_limit: int | None = None,
     authenticated_rate_limit: int | None = None,
     ingest_rate_limit: int | None = None,
+    trusted_proxy_ips: str | None = None,
 ) -> FastAPI:
     environment = ServerConfig.from_env()
     config = ServerConfig(
@@ -79,6 +83,11 @@ def create_app(
         public_rate_limit=_positive_int(public_rate_limit, environment.public_rate_limit),
         authenticated_rate_limit=_positive_int(authenticated_rate_limit, environment.authenticated_rate_limit),
         ingest_rate_limit=_positive_int(ingest_rate_limit, environment.ingest_rate_limit),
+        trusted_proxy_networks=(
+            _parse_trusted_proxy_networks(trusted_proxy_ips)
+            if trusted_proxy_ips is not None
+            else environment.trusted_proxy_networks
+        ),
     )
     store = ReadStore(config.database_path, public_delay_seconds=config.public_delay_seconds)
     store.initialize()
@@ -235,7 +244,7 @@ def _request_rate_limit(
     if not (path.startswith("/v1/") or path.startswith("/internal/")):
         return None
 
-    peer = request.client.host if request.client and request.client.host else "unknown"
+    peer = _rate_limit_peer(request, config.trusted_proxy_networks)
     token = _optional_bearer_token(request.headers.get("Authorization"))
     if path.startswith("/internal/"):
         identity = f"peer:{peer}"
@@ -252,6 +261,50 @@ def _request_rate_limit(
                     limit=config.authenticated_rate_limit,
                 )
     return limiter.check(scope="public", identity=f"peer:{peer}", limit=config.public_rate_limit)
+
+
+def _rate_limit_peer(
+    request: Request,
+    trusted_proxy_networks: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...],
+) -> str:
+    direct_peer = request.client.host if request.client and request.client.host else "unknown"
+    if not trusted_proxy_networks or not _address_in_networks(direct_peer, trusted_proxy_networks):
+        return direct_peer
+
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if not forwarded:
+        return direct_peer
+    candidate = forwarded.split(",", 1)[0].strip()
+    try:
+        return ipaddress.ip_address(candidate).compressed
+    except ValueError:
+        return direct_peer
+
+
+def _address_in_networks(
+    address: str,
+    networks: tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...],
+) -> bool:
+    try:
+        parsed = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    return any(parsed.version == network.version and parsed in network for network in networks)
+
+
+def _parse_trusted_proxy_networks(
+    raw: str,
+) -> tuple[ipaddress.IPv4Network | ipaddress.IPv6Network, ...]:
+    networks: list[ipaddress.IPv4Network | ipaddress.IPv6Network] = []
+    for item in raw.split(","):
+        value = item.strip()
+        if not value:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(value, strict=False))
+        except ValueError as exc:
+            raise ValueError(f"invalid trusted proxy IP/network: {value}") from exc
+    return tuple(networks)
 
 
 def _enforce_public_delay(batch: PublicationBatch, delay_seconds: int) -> PublicationBatch:
