@@ -19,8 +19,8 @@ def _server():
         instructions=(
             "Use Curren as a read-only source of server-published crypto trading intelligence. "
             "Never infer restricted entry, stop, target, or lifecycle fields when the API omits them. "
-            "Verification hashes prove integrity of Curren's recorded publication snapshot, not an independent oracle. "
-            "Curren tools do not execute trades."
+            "Verification hashes check Curren's immutable initial publication and terminal outcome records; "
+            "they are not independent timestamp or profitability proofs. Curren tools do not execute trades."
         ),
     )
 
@@ -47,21 +47,21 @@ def _server():
 
     @server.tool(name="curren_get_recent_results")
     async def get_recent_results(limit: int = 20) -> dict[str, Any]:
-        """Get recent closed Curren signal results."""
+        """Get recent proof-backed terminal Curren signal results."""
         async with CurrenClient() as client:
             result = await client.get_recent_results(limit=limit)
         return result.model_dump(mode="json")
 
     @server.tool(name="curren_get_track_record")
     async def get_track_record() -> dict[str, Any]:
-        """Get the server-published Curren track record and methodology label."""
+        """Get the Curren track record derived from immutable outcome records."""
         async with CurrenClient() as client:
             result = await client.get_track_record()
         return result.model_dump(mode="json")
 
     @server.tool(name="curren_verify_signal")
     async def verify_signal(signal_id: str) -> dict[str, Any]:
-        """Verify integrity of the recorded Curren publication snapshot for one signal."""
+        """Verify Curren's recorded plan and, when terminal, outcome integrity records."""
         async with CurrenClient() as client:
             result = await client.verify_signal(signal_id)
         return result.model_dump(mode="json")
@@ -94,7 +94,7 @@ def main() -> None:
 def _require_safe_http_host(host: str) -> None:
     if host not in _LOOPBACK_HOSTS:
         raise SystemExit(
-            "Curren MCP v0.2 refuses non-loopback Streamable HTTP binds because the bundled MCP server has no "
+            "Curren MCP v0.4 refuses non-loopback Streamable HTTP binds because the bundled MCP server has no "
             "OAuth resource-server gate. Use stdio/localhost, or deploy a separately authenticated MCP gateway."
         )
 
