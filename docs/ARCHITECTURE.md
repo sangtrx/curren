@@ -2,25 +2,34 @@
 
 ## Purpose
 
-This repository is the public distribution layer for Curren intelligence. It is intentionally separate from the private signal/trading runtime.
+This repository is Curren's public distribution layer. It is intentionally separate from the private signal/trading runtime.
 
-The public platform must remain useful even if the private runtime implementation changes. The stable seam is `PublicationBatch`.
+The stable seam is a strict `PublicationBatch`; the public platform must remain useful even if the private runtime implementation changes.
 
 ## Components
 
 ```text
 private runtime
     |
-    | sanitized PublicationBatch
+    | sanitized cumulative PublicationBatch
     v
 PublicationClient
     |
-    | Bearer-authenticated HTTPS
+    | HTTPS + ingestion bearer token
     v
-FastAPI ingestion endpoint
+FastAPI publication boundary
+    |
+    +--> strict schema validation
+    +--> server-side public delay
+    +--> per-signal replay watermark
+    +--> application rate limit
     |
     v
 SQLite/WAL read model
+    |
+    +--> immutable initial publication
+    +--> append-only lifecycle
+    +--> immutable terminal outcome
     |
     +--> anonymous/public API
     +--> Premium API
@@ -33,47 +42,57 @@ SQLite/WAL read model
 
 ### `curren.models`
 
-Owns the external contracts. Clients and publishers share these models so shape drift is caught before data reaches storage.
+Public response models are forward-compatible (`extra=ignore`) so older clients tolerate optional response extensions.
+
+Publication models are fail-closed (`extra=forbid`). Private/source/model/account/execution fields cannot silently cross the private/public boundary.
+
+The publication status vocabulary is deliberately small: `pending`, `active`, `closed`, `expired`. Private runtime states must be normalized by the projector.
 
 ### `curren.publisher`
 
-A thin client for the private integration. It only knows how to send sanitized `PublicationBatch` objects. It contains no SQL or private-runtime imports.
+Thin outbound client for private integrations. It sends only validated `PublicationBatch` objects and contains no private SQL/runtime imports.
 
 ### `curren.store`
 
-Owns the public read model. It uses one SQLite database with WAL enabled.
+Owns the public SQLite/WAL read model.
 
-The initial trade plan is insert-once/immutable at the semantic level. Later updates may change lifecycle/result projection fields but cannot rewrite the original symbol, side, publication timestamp, entry, stop, or target prices.
+Per signal it stores the publication source and latest accepted `source_generated_at`. Equal/older projections are stale and cannot roll state backward.
 
-Lifecycle events are append-only and idempotent.
+The initial trade plan is immutable. Lifecycle events are append-only; replaying an existing event identity with changed values conflicts. The first terminal state creates a second immutable outcome record used by track-record calculations.
+
+### `curren.rate_limit`
+
+Dependency-free, bounded-memory, single-process fixed-window limiter. It protects public, authenticated, and ingestion surfaces independently.
+
+It intentionally does not trust forwarded client-IP headers. A trusted ingress/global limiter should enforce distributed limits when the API runs multiple workers or replicas.
 
 ### `curren.server`
 
-Owns HTTP auth, entitlement selection, validation, response policy, and endpoint composition.
+Owns HTTP auth, entitlement, strict request policy, delay enforcement, rate limiting, and endpoint composition.
 
 The public tier receives delayed active context without exact levels. Premium/Agent receives realtime stored context. Terminal results become full public proof.
 
 ### `curren.client`
 
-Read-only async HTTP client used by CLI and MCP. Restricted fields are modeled as optional and are never reconstructed.
+Read-only async HTTP client used by CLI and MCP. Restricted fields are optional and never reconstructed. HTTP `429` is surfaced with the server's retry hint.
 
 ### `curren.mcp_server`
 
-Read-only MCP v2 adapter. It exposes six compact tools and delegates all authority to the HTTP API.
+Read-only MCP v2 adapter with six compact tools. It delegates all data authority and entitlements to the HTTP API.
 
-It has no trading/execution tool and no private data connector.
+No execution tools exist. Streamable HTTP is restricted to loopback until a separately authenticated MCP resource-server boundary exists.
 
 ### Omarchy
 
-The root `manifest.json` exposes one `bar-widget`. QML calls only the anonymous `/v1/public/summary` endpoint and contains no API/exchange credentials.
+The root `manifest.json` exposes one `bar-widget`. QML calls only anonymous `/v1/public/summary` and contains no API, ingestion, exchange, or execution credential.
 
 ## Data ownership
 
 ### Private runtime owns
 
-- signal generation and filtering
+- signal generation/filtering
 - strategy/source context
-- AI guard/model authority
+- AI/model authority
 - market-data feature computation
 - lifecycle authority
 - execution/risk/account state
@@ -81,40 +100,47 @@ The root `manifest.json` exposes one `bar-widget`. QML calls only the anonymous 
 
 ### Public platform owns
 
-- sanitized signal projection
-- public availability policy
-- public API keys/tier mapping
-- immutable publication snapshot/hash
-- public lifecycle projection
-- public track-record projection
-- client protocols and integrations
+- strict sanitized projection contract
+- public delay/access policy
+- read API keys/tier mapping
+- rate-limit policy
+- immutable initial publication/hash
+- append-only public lifecycle projection
+- immutable terminal outcome/hash
+- public track record
+- client protocols/integrations
 
 ## Failure isolation
 
 A public API outage must not stop signal generation, lifecycle tracking, or execution in the private runtime.
 
-A private publisher should retry failed publication later. The endpoint is idempotent, so replaying recent sanitized state is safe.
+A private publisher may retry a committed batch safely: the same/older `generated_at` is ignored as stale. Publishers should send cumulative state snapshots so a newer projection contains all lifecycle state required downstream.
 
-Public consumers can fail independently:
+Public consumers fail independently:
 
-- CLI/MCP API errors do not write state.
-- Omarchy retains its last valid public response in memory and displays stale/offline state.
-- Unknown or malformed credentials fail closed.
+- CLI/MCP errors never write state.
+- Omarchy retains the last valid public response in memory and shows stale/offline state.
+- Unknown/malformed credentials fail closed.
+- Rate-limit exhaustion returns `429` without touching the read model.
 
-## Security invariants
+## Security/correctness invariants
 
 1. Public clients never receive private database credentials.
 2. The public service has no write path back into the trading runtime.
-3. Ingestion uses a credential distinct from user API keys.
-4. Active public data is delayed before serialization.
-5. Omitted entry/SL/TP values are an entitlement decision, not missing data for clients to infer.
-6. Immutable initial publication fields cannot be rewritten under the same signal id.
-7. No execution endpoints exist in this repository.
+3. Ingestion uses a credential distinct from read API keys.
+4. Publication input rejects unknown fields.
+5. Active public data is delayed server-side.
+6. Omitted entry/SL/TP values are entitlement decisions, not data clients should infer.
+7. Initial publication fields are immutable under a signal id.
+8. Terminal outcome fields are immutable under a signal id.
+9. Stale projections cannot roll state backward.
+10. Lifecycle event identities cannot be rewritten.
+11. No execution endpoints/tools exist in this repository.
 
 ## Scale boundary
 
-SQLite/WAL is deliberate for the first public service: writes are low-frequency sanitized publications and reads are small indexed lookups.
+SQLite/WAL is deliberate for the first public service: publication writes are low-frequency and reads are small indexed lookups.
 
-Move the read model to PostgreSQL only when observed concurrency/write contention justifies it. The API and `PublicationBatch` contracts should not need to change for that migration.
+The built-in limiter is also deliberately process-local. When observed traffic requires multiple workers/replicas, put a trusted reverse proxy/API gateway in front for TLS, global rate limits, network ACLs, and abuse controls. Move the read model to PostgreSQL only when observed write contention/concurrency justifies it.
 
-Rate limiting, TLS, network ACLs, and horizontal ingress controls belong at the reverse proxy/load balancer. Do not add distributed infrastructure preemptively.
+Neither scale migration should require changing the public API or `PublicationBatch` semantics.
