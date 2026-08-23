@@ -35,3 +35,11 @@ def test_bar_visibly_distinguishes_stale_from_live() -> None:
     qml = (REPO_ROOT / "omarchy" / "BarWidget.qml").read_text()
     assert "STALE" in qml
     assert 'feedState === "Stale"' in qml
+
+
+def test_panel_has_bounded_request_recovery() -> None:
+    qml = (REPO_ROOT / "omarchy" / "Panel.qml").read_text()
+    assert "requestTimeout" in qml
+    assert "Request timed out" in qml
+    assert "requestGeneration" in qml
+    assert ".abort()" in qml
