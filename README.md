@@ -50,7 +50,7 @@ curren verify crn_sig_example --json
 Install the MCP extra:
 
 ```bash
-python -m pip install 'git+https://github.com/sangtrx/curren.git#egg=curren[mcp]'
+python -m pip install 'curren[mcp] @ git+https://github.com/sangtrx/curren.git'
 ```
 
 Then configure an MCP host to run:
@@ -132,6 +132,12 @@ Signal and outcome fields exposed by the API are filtered by server-side entitle
 python -m pip install -e '.[dev,mcp]'
 pytest
 ruff check .
+```
+
+The Omarchy manifest can additionally be validated on an Omarchy 4/Quattro host:
+
+```bash
+omarchy plugin validate .
 ```
 
 ## License
