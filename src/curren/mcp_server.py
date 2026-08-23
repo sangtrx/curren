@@ -17,6 +17,7 @@ def _server():
         instructions=(
             "Use Curren as a read-only source of server-published crypto trading intelligence. "
             "Never infer restricted entry, stop, target, or lifecycle fields when the API omits them. "
+            "Verification hashes prove integrity of Curren's recorded publication snapshot, not an independent oracle. "
             "Curren tools do not execute trades."
         ),
     )
@@ -58,7 +59,7 @@ def _server():
 
     @server.tool(name="curren_verify_signal")
     async def verify_signal(signal_id: str) -> dict[str, Any]:
-        """Verify the publication timestamp and content hash for a Curren signal."""
+        """Verify integrity of the recorded Curren publication snapshot for one signal."""
         async with CurrenClient() as client:
             result = await client.verify_signal(signal_id)
         return result.model_dump(mode="json")
@@ -73,7 +74,18 @@ def main() -> None:
     transport = os.getenv("CURREN_MCP_TRANSPORT", "stdio").strip().lower()
     if transport not in {"stdio", "streamable-http"}:
         raise SystemExit("CURREN_MCP_TRANSPORT must be 'stdio' or 'streamable-http'")
-    mcp.run(transport=transport)
+    if transport == "stdio":
+        mcp.run(transport="stdio")
+        return
+    host = os.getenv("CURREN_MCP_HOST", "127.0.0.1")
+    port = int(os.getenv("CURREN_MCP_PORT", "8001"))
+    mcp.run(
+        transport="streamable-http",
+        host=host,
+        port=port,
+        stateless_http=True,
+        json_response=True,
+    )
 
 
 if __name__ == "__main__":
