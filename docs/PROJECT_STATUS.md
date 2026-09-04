@@ -1,10 +1,22 @@
 # Curren Public Platform Status
 
-Last reviewed: 2026-08-23
+Last reviewed: 2026-09-04
 
 Current release line: **v0.4.0 (alpha)**.
 
 This file is the concise source of truth for what this public repository does and does not currently provide.
+
+## Canonical repository role
+
+`sangtrx/curren` is the canonical **public developer/platform surface** for Curren. It owns the
+read-only public API contract, Python client, CLI, MCP server, sanitized publication read model,
+proof/track-record projections, and public integrations/plugins.
+
+It is **not** the Curren public landing page. The canonical landing/marketing frontend for
+`https://curren.tech/` is `sangtrx/curren-landing-page`.
+
+It is also not the private signal generator (`woodsbot-system`), quantitative research authority
+(`curren-research`), or private access/payment authority (`curren-access`).
 
 ## Implemented
 
