@@ -45,16 +45,22 @@ exchange/account secrets into this public repository.
 
 ## Coding/control path
 
-Normal source work runs through the current shared infrastructure authority:
+Normal source work is Web/GitHub-first:
 
 ```text
-controller -> Big Linux Orca -> fresh worktree -> Codex CLI via codex-lb
-           -> checks -> commit -> push exact SHA to GitHub
+ChatGPT Web + GitHub -> candidate branch / exact pushed SHA
+                     -> SentinelX on Big Linux for build/test/runtime evidence
+                     -> Orca/Codex only when another coding/reasoning worker is useful
 ```
 
-Big Linux is the normal source writer. Alpha Linux is controller/Keros-gateway infrastructure, not a
-runtime requirement for this repository. MacBook takeover follows the shared infrastructure emergency
-policy and must not create a second simultaneous writer.
+GitHub is durable source authority. Big Linux keeps a canonical checkout synchronized safely with
+GitHub, fast-forwarding only clean non-ahead `main`; dirty/diverged local work is preserved. Big Linux
+is the canonical Orca worktree/terminal host, not a permanently preferred source writer.
+
+When ChatGPT Web needs structural code context before merge, the shared infrastructure may fetch the
+exact feature-branch SHA into one reusable GitNexus shadow analysis checkout. This does not create a
+second source writer. If source work is explicitly escalated to Orca/Codex, that delegated worktree
+owns the writer lease until it pushes its result, and ChatGPT Web acts as reviewer/supervisor meanwhile.
 
 This repository does not use Keros or Kaggle merely because those Curren Research lanes exist; choose
 a non-Big runner only when a task explicitly requires and authorizes it.
@@ -99,4 +105,6 @@ Do not claim a command passed unless it actually ran successfully.
 
 A change is complete only when ownership is correct, public/private boundaries remain intact, relevant
 focused/full checks pass on the exact accepted checkout, the full diff is reviewed, and the accepted
-commit is durably present in GitHub `main`. Do not infer a production deployment from a source merge.
+commit is durably present in GitHub `main`. Temporary task branches/worktrees should then be cleaned up
+through the shared authorized lifecycle rather than accumulated indefinitely. Do not infer a production
+deployment from a source merge.
