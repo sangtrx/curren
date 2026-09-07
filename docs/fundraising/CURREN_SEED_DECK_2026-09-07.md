@@ -15,7 +15,7 @@ Identity authority: **Curren Identity & Commercial Thesis v1.0 — Verifiable De
 - Working direct-VC cap: **US$8,000,000 post-money** unless a program specifies its own terms.
 - Public platform: **v0.4 alpha**; public live-feed integration remains pending until verified otherwise.
 - No claimed profitable native alpha strategy.
-- Current legal/incorporation status: **not yet confirmed in the fundraising source of truth; do not infer it**.
+- Current legal/incorporation status: **Unincorporated. Curren is not currently owned by or incorporated as an existing legal entity.** Do not invent a jurisdiction, incorporation date, legal entity, or cap table.
 
 Do not invent users, revenue, partnerships, adoption, funding history, returns, institutional usage, or chain-native implementation.
 
