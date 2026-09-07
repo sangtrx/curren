@@ -281,7 +281,11 @@ Crypto has continuous markets, programmable venues and existing automated workfl
 ## Asset status
 
 - This Markdown file is the current canonical deck source.
-- The previously rendered 11-page PDF/PPTX from 2026-09-06 correspond to the superseded narrative and **must not be sent to investors**.
-- A new PDF/PPTX should be rendered from this 12-slide source before SAN-51 is marked submission-ready.
-- Do not publish `curren.tech/investors` in applications until the identity-aligned page is deployed and publicly verified.
-- Founder video recording remains a user-only/manual gate.
+- Current rendered deck is **v0.3 / 12 slides**, generated 2026-09-07 and hash-verified against the canonical source.
+- PDF: `Curren_Seed_Deck_v0.3_2026-09-07.pdf` — SHA-256 `ce4605a40ece7b5e2cd8c85920c20a8a038c8bcf0b0852b88097ad1ac1483699`.
+- PPTX: `Curren_Seed_Deck_v0.3_2026-09-07.pptx` — SHA-256 `712d26569fb96a492e12d3467d70a888988c31f1fe9028cd4108a01ffdfe2fdc`.
+- The old 2026-09-06 11-slide PDF/PPTX remain superseded and **must not be sent to investors**.
+- The v0.3 binaries are preserved in the ChatGPT Library, but are not yet committed to GitHub or published at a stable public asset URL; do not claim otherwise.
+- The identity-aligned `/investors` implementation and accepted production deploy are complete, but `curren.tech/investors` remains fail-closed for application evidence until an independent public HTTP/browser read-back succeeds.
+- Founder video recording/upload remains a user-only/manual gate.
+- Recheck each accelerator/VC form and terms at actual submission time.
