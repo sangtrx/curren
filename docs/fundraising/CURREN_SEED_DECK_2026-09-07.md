@@ -286,6 +286,6 @@ Crypto has continuous markets, programmable venues and existing automated workfl
 - PPTX: `Curren_Seed_Deck_v0.3_2026-09-07.pptx` — SHA-256 `712d26569fb96a492e12d3467d70a888988c31f1fe9028cd4108a01ffdfe2fdc`.
 - The old 2026-09-06 11-slide PDF/PPTX remain superseded and **must not be sent to investors**.
 - The v0.3 binaries are preserved in the ChatGPT Library, but are not yet committed to GitHub or published at a stable public asset URL; do not claim otherwise.
-- The identity-aligned `/investors` implementation and accepted production deploy are complete, but `curren.tech/investors` remains fail-closed for application evidence until an independent public HTTP/browser read-back succeeds.
+- `https://curren.tech/investors` is deployed, independently public-readback verified, and approved for accelerator/investor application evidence. Keep its current truth boundaries: v0.4 alpha, pre-revenue, no profitability claim, public live-feed integration pending, and clearly labeled demonstration data.
 - Founder video recording/upload remains a user-only/manual gate.
 - Recheck each accelerator/VC form and terms at actual submission time.
