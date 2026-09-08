@@ -121,7 +121,7 @@ Until that happens, **do not use `/investors` as a live demo URL**. The public d
 
 I am an AI engineering lead and solo technical founder based in Vietnam. I currently lead AI at EPIC TECHNOLOGY and have more than six years of hands-on experience across applied AI, backend/data systems, architecture, infrastructure, and user-facing products. My recent work includes clinical decision-support systems, conversational and agentic AI, multimodal/video intelligence, and trading infrastructure.
 
-I completed a Master of Engineering in Computer Engineering at the University of Arkansas with a 4.0/4.0 GPA. With Curren, I have built across the research, private live runtime, public API/CLI/MCP, publication, and product boundaries myself.
+I completed a Master of Science in Computer Engineering at the University of Arkansas with a 4.0/4.0 GPA. With Curren, I have built across the research, private live runtime, public API/CLI/MCP, publication, and product boundaries myself.
 
 ### Describe an instance where you demonstrated exceptional creativity or perseverance
 
