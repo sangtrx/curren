@@ -147,7 +147,7 @@ Curren is pre-revenue and does not yet have meaningful customer/user traction. T
 
 ### Founder / founder-market fit
 
-Sang Truong is the solo technical founder of Curren and currently leads AI engineering at EPIC TECHNOLOGY. He has more than six years of hands-on experience across applied AI, agentic/LLM systems, backend/frontend, data, infrastructure, evaluation, safety boundaries, and auditability. He has built Curren end to end across research, live runtime, public API/CLI/MCP, access rails, and product surfaces. He holds a Master of Engineering in Computer Engineering from the University of Arkansas with a 4.0/4.0 GPA.
+Sang Truong is the solo technical founder of Curren and currently leads AI engineering at EPIC TECHNOLOGY. He has more than six years of hands-on experience across applied AI, agentic/LLM systems, backend/frontend, data, infrastructure, evaluation, safety boundaries, and auditability. He has built Curren end to end across research, live runtime, public API/CLI/MCP, access rails, and product surfaces. He holds a Master of Science in Computer Engineering from the University of Arkansas with a 4.0/4.0 GPA.
 
 Do not claim a completed PhD, institutional trading track record, or unsupported company-scale impact.
 
