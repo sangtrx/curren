@@ -80,7 +80,7 @@ Curren is not yet live on Base. The existing product is a v0.4 alpha public deve
 
 ### Founder — compact
 
-Sang Truong is Curren's solo technical founder, based in Vietnam, and currently leads AI engineering at EPIC TECHNOLOGY. He has more than six years of hands-on experience across applied AI, agentic/LLM systems, backend/frontend, data, infrastructure, evaluation and auditability, and holds a Master of Engineering in Computer Engineering from the University of Arkansas with a 4.0/4.0 GPA.
+Sang Truong is Curren's solo technical founder, based in Vietnam, and currently leads AI engineering at EPIC TECHNOLOGY. He has more than six years of hands-on experience across applied AI, agentic/LLM systems, backend/frontend, data, infrastructure, evaluation and auditability, and holds a Master of Science in Computer Engineering from the University of Arkansas with a 4.0/4.0 GPA.
 
 ### Fundraising / financing — compact
 
