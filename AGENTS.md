@@ -19,15 +19,29 @@ trade-execution runtime.
 Read in this order:
 
 1. `AGENTS.md`
-2. `AI_START_HERE.md`
-3. `docs/PROJECT_STATUS.md`
-4. `README.md`
-5. `docs/API_CONTRACT.md`
-6. `docs/ARCHITECTURE.md`
-7. task-specific source/tests
+2. `WORKFLOW_AUTHORITY.md`
+3. the current target `sangtrx/sang-workspace` GitHub Issue
+4. `AI_START_HERE.md`
+5. `docs/PROJECT_STATUS.md`
+6. `README.md`
+7. `docs/API_CONTRACT.md`
+8. `docs/ARCHITECTURE.md`
+9. task-specific source/tests
 
 Repository Git, current source/tests, and the files above outrank prior chats, old Curren repositories,
-search-index snippets, or generated summaries.
+search-index snippets, generated summaries, or historical Linear/SAN records.
+
+## Workflow authority
+
+GitHub Issues in `sangtrx/sang-workspace` are the only durable task/workflow authority. Put task status,
+checkpoints, blockers, next actions, user gates, active execution/session/worktree references, writer
+ownership, and acceptance evidence there. GitHub repositories/PRs/commits remain source/artifact
+authority. ChatGPT Web is the primary orchestrator; BigLinux/Alpha-Linux and other hosts are bounded
+execution infrastructure.
+
+Linear is retired and read-only historical only. Do not create, update, comment on, checkpoint, or route
+active work through Linear. Historical `SAN-*`/Linear references in dated fundraising or delivery packets
+are provenance labels only; use the corresponding current GitHub Issue for live workflow truth.
 
 ## Ownership boundaries
 
@@ -61,6 +75,7 @@ When ChatGPT Web needs structural code context before merge, the shared infrastr
 exact feature-branch SHA into one reusable GitNexus shadow analysis checkout. This does not create a
 second source writer. If source work is explicitly escalated to Orca/Codex, that delegated worktree
 owns the writer lease until it pushes its result, and ChatGPT Web acts as reviewer/supervisor meanwhile.
+Record that live ownership on the current GitHub Issue and clear it when the delegated session ends.
 
 This repository does not use Keros or Kaggle merely because those Curren Research lanes exist; choose
 a non-Big runner only when a task explicitly requires and authorizes it.
@@ -104,7 +119,8 @@ Do not claim a command passed unless it actually ran successfully.
 ## Completion
 
 A change is complete only when ownership is correct, public/private boundaries remain intact, relevant
-focused/full checks pass on the exact accepted checkout, the full diff is reviewed, and the accepted
-commit is durably present in GitHub `main`. Temporary task branches/worktrees should then be cleaned up
-through the shared authorized lifecycle rather than accumulated indefinitely. Do not infer a production
-deployment from a source merge.
+focused/full checks pass on the exact accepted checkout, the full diff is reviewed, the current
+`sangtrx/sang-workspace` GitHub Issue records the durable acceptance transition and clears finished
+execution/session/worktree refs, and the accepted commit is durably present in GitHub `main`. Temporary
+task branches/worktrees should then be cleaned up through the shared authorized lifecycle rather than
+accumulated indefinitely. Do not infer a production deployment from a source merge.
