@@ -1,5 +1,7 @@
 # Alliance ALL19 — High-Signal Answer Overlay
 
+> **Superseded for ALL19 submission copy on 2026-09-21.** The live application packet in [`ALLIANCE_ALL19_APPLICATION_2026-09-08.md`](ALLIANCE_ALL19_APPLICATION_2026-09-08.md) has been reconciled to the Alpha OS thesis and current Alliance economics. Keep this file as historical evidence of the earlier decision-intelligence narrative; do not paste these answers without reconciling against the current packet.
+
 Recorded: 2026-09-08
 Owner issue: SAN-54
 

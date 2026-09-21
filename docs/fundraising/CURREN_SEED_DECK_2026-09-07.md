@@ -1,5 +1,7 @@
 # Curren Seed Deck — v0.3 — 2026-09-07
 
+> **Superseded for new fundraising on 2026-09-21.** This file remains historical evidence of the v0.3 `Verifiable Decision Intelligence` positioning. New applications must use [`CURREN_SEED_DECK_2026-09-21.md`](CURREN_SEED_DECK_2026-09-21.md) and [`CURREN_ALPHA_OS_FUNDRAISING_THESIS_2026-09-21.md`](CURREN_ALPHA_OS_FUNDRAISING_THESIS_2026-09-21.md). Do not silently rewrite this dated artifact into the new thesis.
+
 Canonical investor-deck source for Curren fundraising applications.
 
 Identity authority: **Curren Identity & Commercial Thesis v1.0 — Verifiable Decision Intelligence**.

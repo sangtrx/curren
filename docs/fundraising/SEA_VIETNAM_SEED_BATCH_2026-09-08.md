@@ -1,5 +1,7 @@
 # Curren — Vietnam & Southeast Asia seed batch execution packet — 2026-09-08
 
+> **2026-09-21 positioning override:** use [`SEA_VIETNAM_SEED_ALPHA_OS_UPDATE_2026-09-21.md`](SEA_VIETNAM_SEED_ALPHA_OS_UPDATE_2026-09-21.md) plus [`CURREN_ALPHA_OS_FUNDRAISING_THESIS_2026-09-21.md`](CURREN_ALPHA_OS_FUNDRAISING_THESIS_2026-09-21.md) for all new VC outreach. This dated packet remains historical evidence for the routes/form mechanics observed on 2026-09-08. Re-read every live fund route and field before submission.
+
 This document is the durable execution packet for Linear SAN-64. It is intentionally submission-ready but **not evidence that any fund has been contacted or any form has been submitted**.
 
 ## Authority and truth lock
