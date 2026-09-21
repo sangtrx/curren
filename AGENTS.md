@@ -40,7 +40,7 @@ authority. ChatGPT Web is the primary orchestrator; BigLinux/Alpha-Linux and oth
 execution infrastructure.
 
 Linear is retired and read-only historical only. Do not create, update, comment on, checkpoint, or route
-active work through Linear. Historical `SAN-*`/Linear references in dated fundraising or delivery packets
+active work through Linear. Historical `SAN-*`/Linear references in dated internal planning or delivery packets
 are provenance labels only; use the corresponding current GitHub Issue for live workflow truth.
 
 ## Ownership boundaries
@@ -52,7 +52,7 @@ are provenance labels only; use the corresponding current GitHub Issue for live 
 - `sangtrx/curren-research` owns V9 quantitative research and accepted research releases.
 - `sangtrx/curren-access` owns private membership/access/support/referral/payment truth.
 - `sangtrx/curren-social-factory` owns content rendering/review/distribution preparation.
-- `sangtrx/curren-workspace` owns cross-repository routing documentation only.
+- `sangtrx/curren-workspace` owns private cross-repository planning and routing documentation.
 
 Never import private runtime databases, credentials, raw source messages, research working state, or
 exchange/account secrets into this public repository.
