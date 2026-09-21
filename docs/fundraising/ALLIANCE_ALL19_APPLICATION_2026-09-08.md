@@ -1,9 +1,9 @@
 # Curren — Alliance ALL19 Application Packet
 
-Last reconciled: 2026-09-08
-Owner issue: SAN-54
+Last reconciled: 2026-09-21
+Owner issue: `sangtrx/sang-workspace#69`; thesis migration: `sangtrx/sang-workspace#861`
 
-This is the source-controlled review packet for Curren's Alliance ALL19 application. It must stay consistent with `docs/PROJECT_STATUS.md`, the reusable Curren fundraising packet in Linear, and the live Alliance application/terms.
+This is the source-controlled review packet for Curren's Alliance ALL19 application. It must stay consistent with `docs/PROJECT_STATUS.md`, the 2026-09-21 Alpha OS fundraising thesis, GitHub Issues, and the live Alliance application/terms.
 
 ## Authority and submission guardrails
 
@@ -11,7 +11,7 @@ This is the source-controlled review packet for Curren's Alliance ALL19 applicat
 - Early admission deadline: **2026-09-23**
 - Regular admission deadline: **2026-11-18**
 - ALL19 starts: **2027-01-11**
-- Current live economics, rechecked 2026-09-08: **$400K upon admission at a $4M post-money valuation via SAFE + 1:1 token side letter**; Alliance's homepage separately advertises a **$400K follow-on at seed**.
+- Current official economics, rechecked 2026-09-21: **$500K at a $5M post-money valuation via SAFE + 1:1 token side letter**. Recheck immediately before submission/signing because program terms can change.
 - Recheck economics immediately before submission and before signing. Alliance has changed its published terms across recent cohorts.
 - Current form publicly exposes only the first founder-email step before the applicant proceeds and agrees to application-status email communications. Do not infer that the downstream form is unchanged.
 - The field map below is based on the current live entry step plus Alliance's longstanding application schema visible in prior public application captures/rehosts. Recheck every downstream label/required flag after entering the live form.
@@ -20,8 +20,8 @@ This is the source-controlled review packet for Curren's Alliance ALL19 applicat
 ## Current source truth
 
 - Company/product: **Curren**
-- Category: **verifiable decision intelligence for financial markets — crypto first**
-- One-liner: **Curren turns market decisions into verifiable, machine-readable trading intelligence.**
+- Company thesis: **Alpha OS for traders and AI agents — crypto first**
+- One-liner: **Curren turns market hypotheses into validated, deployable alpha — for traders and AI agents.**
 - Founder: **Sang Truong**, solo technical founder in Vietnam
 - Current professional role: **Head of Artificial Intelligence at EPIC TECHNOLOGY**
 - Founder LinkedIn: `https://linkedin.com/in/tqsang`
@@ -65,19 +65,25 @@ The labels below have appeared consistently in Alliance's historical application
 
 ### What are you building? — short field
 
-**Verifiable trading decision intelligence**
+**AI alpha factory for traders & agents**
 
 ### What is the problem that you're solving?
 
-Crypto trading intelligence is abundant but difficult to trust. Signals and AI-generated market opinions often live in chats, screenshots, and mutable APIs, so a trader or software agent may not know what the original plan actually was, whether it changed after the fact, or whether historical performance was selected after outcomes were known.
+Trading has three versions of the same bottleneck. Retail traders want a clear entry, invalidation and targets without rebuilding the analysis every time. More experienced traders have market hypotheses but usually do not have the point-in-time data, statistical controls, cost modeling and deployment infrastructure to test them rigorously. AI agents can generate hypotheses at massive scale, but without strict search budgets and validation they mostly scale overfitting.
 
-Curren's thesis is that provenance, lifecycle state, and permission boundaries should be part of the market-intelligence product itself. A useful decision should be captured before the outcome, updated append-only through its lifecycle, resolved transparently, and exposed in a form both humans and software can verify.
+Curren's thesis is that hypothesis generation is becoming cheap while trustworthy alpha validation remains scarce. Curren turns a human or agent hypothesis into a formal, bounded research program, rejects weak ideas, promotes only what survives, and makes accepted decisions consumable by traders and software.
 
 ### Expand on the product that you're building
 
-Curren turns each market decision into a durable, machine-readable object: original thesis/setup, publication time and provenance, lifecycle updates, invalidation/targets, terminal outcome, and verification. Humans are intended to consume the same bounded decision state through Curren Pro that trading teams and software agents consume through Curren's read-only API, Python client, CLI, and MCP interface.
+Curren is building an Alpha OS with one engine and three user surfaces.
 
-Under the product, Curren separates point-in-time research, private live evaluation/lifecycle processing, sanitized publication, and execution authority. The public developer platform is already v0.4 alpha. A sanitized landing replica and publication path are implemented, but production publication is still disabled/not yet verified end to end, so Curren does not claim a live public feed today.
+**Retail / Signals / Pro:** accepted decisions become clear entry, stop/invalidation, targets and lifecycle so a trader can act with less repeated analysis.
+
+**Research Pro / Team:** a trader brings a hypothesis; Curren formalizes it, constructs point-in-time evidence, runs bounded cost-aware experiments, compares baselines and robustness gates, explains failure/survival, and produces a deployable artifact only when the evidence survives.
+
+**Agent-native Alpha Factory:** humans or AI agents can generate hypotheses at scale, but the same finite-search, point-in-time and failure-retention rules prevent the system from becoming a backtest-optimization machine.
+
+Underneath this product, Curren separates scientific research, live decision/lifecycle processing, sanitized publication and execution authority. The public developer platform is alpha; the live public publication path is not claimed active until separately verified. User hypotheses and strategy logic are private by default.
 
 ### Founder video — optional if the live form still makes it optional
 
@@ -147,27 +153,29 @@ Not yet. I currently lead AI at EPIC TECHNOLOGY while building Curren as a solo 
 
 ### When did you start working on this idea and why did you choose it?
 
-I started building the current Curren product in **August 2026**, after working on crypto signal, trading, and research systems and repeatedly hitting the same trust problem: it was easier to generate an opinion than to prove what was actually known and recommended before the market moved.
+I started building the current Curren product in **August 2026** after working on crypto signal, trading and research systems and seeing two sides of the same problem. Retail users want actionable decisions instead of another research burden, while serious traders can have good market hypotheses but still lack the infrastructure to test them without leakage, cherry-picking or unrealistic execution assumptions.
 
-That pushed me to separate point-in-time research, live decisioning, publication, and execution, and to treat the decision lifecycle itself as a product object rather than another chat message or mutable dashboard row.
+As I added AI agents to the research process, the problem became sharper: generating hypotheses became easy, but making large-scale search scientifically honest became the hard part. That pushed Curren toward one Alpha OS: hypothesis → bounded evidence → accepted strategy → distribution/deployment → prospective outcome.
 
 ### What is your unfair advantage in solving this problem?
 
-My advantage is being able to build and evaluate the full system boundary myself. I have spent more than six years across applied AI, backend/data engineering, architecture, infrastructure, and production reliability, and I have already implemented Curren across point-in-time research, private live lifecycle processing, public API/CLI/MCP access, immutable publication/outcome records, replay protection, and a separate execution authority boundary.
+My advantage is that I have already built across the full boundary myself: point-in-time quantitative research and falsification, live signal/lifecycle processing, AI quality gates, public API/CLI/MCP, access/payment rails, distribution and separately gated execution architecture.
 
-The moat I am pursuing is not a secret indicator. It is the accumulating evidence chain from ex-ante market decision + context through lifecycle + terminal outcome, plus the product and infrastructure discipline required to make that record trustworthy to both humans and autonomous software.
+That lets Curren dogfood the same research-to-alpha workflow it intends to sell. The longer-term compounding asset is not a secret indicator; it is the pre-outcome history of hypothesis + evidence + experiment lineage + lifecycle + outcome + regime/context + downstream usage, accumulated under explicit ownership rules.
 
 ### What other companies are solving this problem today or could if they wanted to? Why will you succeed against them?
 
-Several adjacent products could move into parts of this problem: market-data/analytics platforms, AI crypto-research products, trading terminals, social/copy-trading products, and agent-automation tools. Some Alliance portfolio companies also sit near the trading/automation boundary.
+Adjacent products include strategy builders/backtest platforms, market-data terminals, copy/signal products, quant infrastructure and AI trading agents. Some can generate strategy code quickly; others have strong execution or data breadth.
 
-Curren is deliberately not trying to beat them on raw data breadth, chat UX, or trade execution. The product is designed around a narrower primitive that most adjacent systems treat as secondary: preserving the original decision before the outcome, append-only lifecycle state, immutable terminal resolution, and a permissioned machine-readable interface. If this becomes valuable, Curren's advantage compounds in the longitudinal dataset of ex-ante decision + evidence + lifecycle + outcome rather than in any single prediction model.
+Curren is differentiated by treating **alpha discovery and scientific validation as one bounded system** rather than stopping at code generation or a visually attractive backtest. The workflow preserves point-in-time inputs, explicit baselines, finite search budgets, costs, retained failures and prospective outcomes. The same accepted alpha can then serve retail, team/API and agent consumers.
+
+Curren does not need every user strategy to become Curren property. Private user hypotheses stay private by default; future contribution/marketplace modes require explicit opt-in.
 
 ### What does your founding team believe in that very few people agree with you on?
 
-The most valuable AI-trading product will not necessarily be the model that produces the highest-looking backtest. As models and market data become cheaper, the scarce layer will be **trustworthy decision state**: what was known, what was recommended before the move, what changed, what the system was authorized to do, and what ultimately happened.
+AI will make market-hypothesis generation abundant. That does **not** make durable alpha abundant; it makes research discipline more valuable.
 
-I think preserving losers and rejected ideas can become more valuable than marketing only winners because autonomous financial software will need auditable evidence and calibrated trust, not screenshots of past success.
+I believe the winning infrastructure is not the model that can generate the most strategies or the backtest with the highest-looking Sharpe. It is the system that can let humans and agents search broadly while preserving point-in-time evidence, finite opportunity budgets, failures, costs and prospective truth — and then route the survivors into products people can actually use.
 
 ### What's your current traction?
 
@@ -183,21 +191,27 @@ The next milestone is not to manufacture a traction number; it is to activate on
 
 ### What unique insights do you have about your users?
 
-Curren does **not** yet claim validated customer insight from a meaningful user base. The working product hypothesis is that small crypto trading teams and builders of financial/trading agents already spend effort reconstructing decisions across feeds, messages, and internal tools, while automated consumers need explicit state and provenance rather than narrative alone.
+Curren does **not** yet claim validated insight from a meaningful paying-user base. The working segmentation is explicit and testable:
 
-The next customer-discovery question is whether those users will pay first for a human Pro workflow or a machine/team API workflow. Alliance is attractive partly because its crypto-native founder network can pressure-test that assumption quickly.
+- retail traders want less analysis burden and clearer entry/exit/risk decisions;
+- experienced traders want to turn their own market hypotheses into rigorously tested strategies without assembling a full quant stack;
+- agent builders need machine-readable research and decision primitives that can scale hypothesis generation without silently scaling selection bias.
+
+The immediate customer-learning objective is to test the second segment through paid hypothesis-to-alpha design partners while Curren dogfoods the first segment itself.
 
 ### What's your distribution strategy?
 
-Start with a narrow founder-led loop: **public proof/content -> product demo -> design partner -> paid validation -> repeatable workflow**.
+Start with a founder-led loop rather than a broad consumer launch:
 
-The content itself should mirror the product: before-the-move setups, lifecycle updates, invalidation/loser autopsies, rejected/no-trade cases, regime notes, and API/agent demos. I would use those artifacts to reach small trading teams and financial-agent builders directly, then concentrate distribution around whichever Pro or API workflow shows real willingness to pay.
+**dogfood Alpha Factory → publish prospective signal/lifecycle evidence → recruit a trader/team with a real hypothesis → run a bounded Research Pro / Team pilot → charge for repeated workflow → productize the repeatable interface.**
+
+Retail Signals/Pro remains a distribution surface and evidence generator. Technical communities around trading automation and financial agents are the initial B2B/design-partner pool. The agent-native API expands only after the human research workflow demonstrates value.
 
 ### How big could your product become?
 
-The initial wedge is verifiable crypto market intelligence for humans and software agents. If the core primitive works, Curren can expand from a feed/API product into the trust and decision layer between market data, AI agents, and capital: permissioned decision state, team/agent workflows, provider/research reputation, evaluation history, and eventually separately authorized non-custodial execution where legal and product boundaries support it.
+The initial wedge is crypto because it is 24/7, programmable and already mixes human traders, APIs and bots. If the workflow works, Curren can become an Alpha OS where humans and AI agents discover, validate, deploy and optionally monetize systematic trading strategies across more markets.
 
-The long-term category is broader than signals: **decision provenance + lifecycle intelligence for autonomous financial software**. The value capture starts with Curren Pro and Curren API and can deepen as the ex-ante decision/evidence/outcome dataset compounds.
+The platform can expand from retail signal distribution and Research Pro / Team into an agent-native Alpha Factory, strategy registry/marketplace with explicit creator ownership, and separately authorized non-custodial execution. Those later layers are roadmap, not current shipped claims.
 
 ### If you failed five years from now, why?
 
@@ -207,9 +221,9 @@ I would rather test those risks directly now than hide them behind engagement or
 
 ### Fundraising history and future plans
 
-Curren has **not raised external funding** and is currently **unincorporated**.
+Curren has not raised a formal institutional round. Outside a program with fixed terms, the current direct-VC working plan is to raise **US$500K** via a post-money SAFE at a working **US$8M post-money cap**.
 
-Outside a program with fixed terms, the current direct-VC working plan is to raise **US$500K** via a post-money SAFE at a working **US$8M post-money cap**. For Alliance, the program's current published standard economics override that generic plan: **$400K at a $4M post-money valuation via SAFE + 1:1 token side letter**, with the homepage separately advertising a **$400K seed follow-on**.
+For Alliance, current official program economics override the generic plan: **US$500K at a US$5M post-money valuation via SAFE + 1:1 token side letter**, rechecked 2026-09-21. Re-read the live terms immediately before submission and again before signing.
 
 ### Investment track — only if ALL19 still asks this
 
@@ -221,9 +235,9 @@ Choose the **standard early-stage / admission deal** unless the current live for
 
 ### Why are you applying to Alliance? What help are you looking for?
 
-Alliance is one of the few accelerators where being pre-revenue, solo, and deeply technical is not something I need to disguise. I can build the system, but Curren's current bottleneck is product wedge and distribution: which trading-team or financial-agent workflow values provenance/lifecycle enough to pay, and how to turn that into a repeatable acquisition loop.
+I can build the full stack, but the current bottleneck is commercial learning rather than more architecture. I want to turn Curren's Alpha Factory into one workflow that real traders and small teams repeatedly pay for: bring a hypothesis, receive rigorous evidence, deploy only if it survives, and then consume the same accepted decision through human or machine interfaces.
 
-I want crypto-native pressure on product, GTM, and fundraising from people who understand trading infrastructure and early financial products. I also want a community that will push Curren toward a venture-scale decision-intelligence layer rather than a small signal-subscription business.
+Alliance is unusually relevant because it is crypto/fintech-native, accepts deeply technical teams before revenue, and can pressure-test product, distribution and fundraising. I also want a founder community that understands trading infrastructure and autonomous financial software, so Curren can grow beyond a small signal subscription without pretending it already has PMF.
 
 ### Alliance member referral
 
