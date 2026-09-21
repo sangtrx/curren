@@ -14,6 +14,25 @@ Long-term: **the operating system where humans and AI agents discover, validate,
 
 Crypto is the first market because it is 24/7, programmable and already combines retail traders, research communities, APIs, bots and autonomous workflows.
 
+## Pitch translation — what Alpha OS actually does
+
+Do **not** reduce Curren to "a user gives us a strategy and we backtest it." The input can be a rough human market intuition or an agent-generated hypothesis, not an already formalized trading system.
+
+Curren's Alpha Factory compiles that hypothesis into a disciplined quantitative research specification: market/universe, timing, causal inputs, labels, controls, baselines, cost assumptions, finite search budget and explicit falsification/promotion gates. It then evaluates the idea with point-in-time-safe evidence, out-of-sample tests, fees/slippage/funding where applicable, robustness checks and statistical controls. Failures remain part of the record. Most hypotheses should fail.
+
+Only evidence that survives the frozen gates is eligible for the Alpha Registry and later downstream use through retail signals, API/agents or separately authorized paper/live deployment.
+
+The simple pitch is:
+
+> **AI makes trading hypotheses abundant. Curren turns rough hypotheses into quant-grade evidence, kills weak ideas, and promotes only the strategies that survive.**
+
+For a non-quant audience:
+
+> **Coming up with a trading idea is easy. Curren turns the idea into a proper quantitative experiment and tries to prove it wrong before anyone trusts it.**
+
+For investor/application copy, the category remains **Alpha OS**. "Quant research copilot," "backtest service," "AI trading bot," and "signal generator" are incomplete descriptions and should not be used as the company identity.
+
+
 ## Problem by user maturity
 
 ### Retail trader
