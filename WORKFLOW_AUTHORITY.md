@@ -14,7 +14,7 @@ Do not create, update, comment on, checkpoint, or route active Curren work throu
 
 ## Historical documents
 
-Dated fundraising, research and delivery packets may contain `SAN-*`, “Linear issue”, “Linear checkpoint”, or similar wording because those documents captured the workflow state that existed when the packet was produced. Those references are retained as **historical provenance only**. They do not override this file and must not be used to determine current status, priority, blockers, next action, approval state or completion.
+Dated internal planning, research, and delivery packets may contain `SAN-*`, “Linear issue”, “Linear checkpoint”, or similar wording because those documents captured the workflow state that existed when the packet was produced. Those references are retained as **historical provenance only**. They do not override this file and must not be used to determine current status, priority, blockers, next action, approval state or completion.
 
 When a historical packet says to read/update Linear, interpret the active-work equivalent as: read/update the corresponding `sangtrx/sang-workspace` GitHub Issue. Do not rewrite historical evidence merely to make the old tracker name disappear.
 
