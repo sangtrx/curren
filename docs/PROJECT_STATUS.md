@@ -1,6 +1,6 @@
 # Curren Public Platform Status
 
-Last reviewed: 2026-09-04
+Last reviewed: 2026-09-08
 
 Current release line: **v0.4.0 (alpha)**.
 
@@ -37,6 +37,17 @@ It is also not the private signal generator (`woodsbot-system`), quantitative re
 - Trusted reverse-proxy chain handling for client-IP rate-limit identity.
 - Minimal health endpoint with no hidden signal-count side channel.
 
+### Landing read replica
+
+- Supabase project `curren-public` is provisioned as a landing-only sanitized replica, not a private-runtime datastore.
+- Production migrations `20260905111608 create_curren_public_read_model` and `20260907202242 harden_curren_public_read_model_v2` define the bounded read model and hardened anonymous boundary.
+- `public_live_signals` exposes delayed, freshness-bounded active status/R context without active entry, stop, targets, lifecycle, or private source identifiers.
+- `public_recent_results` exposes terminal closed outcomes independently of active-feed freshness.
+- `public_feed_status` distinguishes `idle`, `fresh`, and `stale` replica state.
+- Anonymous writes are revoked; base tables use RLS; the public views use `security_invoker`.
+- `supabase/functions/curren-api/index.ts` is the source authority for the Supabase publication bridge. The deployed v2 bridge enforces its own publisher Bearer authorization, the 1800-second minimum public delay, source ownership, bounded batch size, future-clock guard, and monotonic replay watermark.
+- See `docs/SUPABASE_READ_MODEL.md` for the exact landing-replica contract and activation procedure.
+
 ### Clients/integrations
 
 - Async Python API client.
@@ -56,24 +67,22 @@ It is also not the private signal generator (`woodsbot-system`), quantitative re
 - MCP Streamable HTTP is loopback-only until a separately authenticated remote MCP resource-server/gateway exists.
 - GitHub Actions are intentionally not configured; verification is local/host-side.
 
-## Not yet connected to production
+## Not yet activated end to end
 
-The public platform is not itself the Curren signal generator. Production usefulness requires these external/private integrations:
+The public platform is not itself the Curren signal generator. The source-side publication projector and the Supabase landing replica now exist, but production signal publication is not yet active end to end.
 
-1. **`woodsbot-system` publication projector**
-   - read canonical signal/lifecycle/outcome state;
-   - normalize private lifecycle statuses to the public vocabulary;
-   - produce cumulative sanitized `PublicationBatch` snapshots;
-   - publish one-way to `/internal/v1/publications`.
-2. **Production deployment for `api.curren.tech`**
-   - TLS/reverse proxy;
-   - persistent SQLite volume for initial scale;
-   - network restriction for the ingestion path;
-   - global ingress rate limits in addition to the process-local limiter.
+1. **`woodsbot-system` publication projector activation**
+   - the standalone sanitized projector is implemented and failure-isolated;
+   - it remains disabled by default;
+   - it must be configured to target the Supabase bridge, run one bounded accepted cycle, and then be verified before continuous publication is enabled;
+   - at this checkpoint the Supabase `signals` replica contains zero rows, so no live-feed claim is valid.
+2. **Canonical production deployment for `api.curren.tech`**
+   - the separate FastAPI public API contract still requires its own verified production deployment if that canonical API hostname is to be marketed as live;
+   - TLS/reverse proxy, persistent storage, ingestion network restriction, and global ingress rate limits remain deployment concerns for that service.
 3. **Curren access/entitlement integration**
-   - provision/revoke Premium and Agent API credentials from the private access control plane rather than static environment configuration.
+   - Premium and Agent credentials still need to be provisioned/revoked from the private access control plane rather than static environment configuration.
 
-Until those are completed, the default `https://api.curren.tech` URL in clients/plugins is the intended production endpoint contract, not evidence that a live production feed is already available.
+The Supabase landing read replica does not prove that `https://api.curren.tech` is live. Likewise, deployed Supabase infrastructure with zero replicated rows does not prove that production publication is enabled.
 
 ## Private runtime mapping required
 
@@ -90,7 +99,7 @@ expired
 manual_close
 ```
 
-The public projector must map them to:
+The public projector maps them to:
 
 ```text
 pending -> pending
@@ -162,6 +171,8 @@ For Omarchy changes also run on Omarchy 4/Quattro:
 omarchy plugin validate .
 ```
 
+For the Supabase landing replica, additionally verify the current migration list, RLS/grants, `security_invoker` views, Security Advisor, deployed Edge Function source/version, and a bounded publisher cycle before calling the feed active.
+
 ## Release readiness
 
-The public repo is suitable for continued OSS/client development, but **do not market it as a live Curren signal API until the private projector and production endpoint are actually deployed and verified**.
+The public repo is suitable for continued OSS/client development, but **do not market either the canonical API or the Supabase landing replica as a live Curren signal feed until the production publisher is enabled and current runtime evidence verifies end-to-end publication**.
