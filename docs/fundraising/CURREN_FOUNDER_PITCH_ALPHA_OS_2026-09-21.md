@@ -2,8 +2,8 @@
 
 Canonical for founder videos, accelerator applications, investor conversations and short verbal pitches from: 2026-09-21
 
-Workflow authority: `sangtrx/sang-workspace#66`  
-Product thesis: `docs/PRODUCT_THESIS.md`  
+Workflow authority: `sangtrx/sang-workspace#66`
+Product thesis: `docs/PRODUCT_THESIS.md`
 Fundraising thesis: `docs/fundraising/CURREN_ALPHA_OS_FUNDRAISING_THESIS_2026-09-21.md`
 
 **DO NOT OVERENGINEER.**
