@@ -1,5 +1,7 @@
 # Base Batches 004 — Curren application packet — 2026-09-08
 
+> **Closed-cohort historical packet.** Base Batches 004 applications are closed. Do not submit or treat this Base-first wedge as current company truth. `sangtrx/sang-workspace#308` owns preparation for a future Batch 005; do not invent its dates or force a Base-first product unless Base publishes a new cohort and the founder still chooses a real Base-native implementation. New Curren positioning is owned by the 2026-09-21 Alpha OS thesis.
+
 Status: **offline submission packet ready; founder video recording + authenticated final submission remain manual gates**.
 
 Official program authority:
