@@ -1,11 +1,27 @@
 # Curren
 
-**Verifiable crypto trading intelligence for humans and AI agents.**
+**Alpha infrastructure for traders and AI agents.**
 
-Curren is the public developer/distribution surface for [curren.tech](https://curren.tech/): a read-model API, terminal CLI, MCP server, publication client, and native Omarchy Quattro plugin.
+**Curren turns market hypotheses into validated, deployable alpha — for traders and AI agents.** This repository is the public developer/distribution surface for [curren.tech](https://curren.tech/): a read-model API, terminal CLI, MCP server, publication client, and native Omarchy Quattro plugin.
 
 > The private signal engine, strategy/research logic, raw-source ingestion, AI guard, execution runtime, accounts, and production trading database are intentionally **not** part of this repository.
 
+
+## Company thesis
+
+Curren is being built as an **Alpha OS** with one engine serving three levels of user:
+
+1. **Retail / Signals** — clear entry, stop/invalidation, targets and lifecycle with less manual analysis.
+2. **Research Pro / Team** — a trader brings a hypothesis; Curren turns it into point-in-time, cost-aware, falsifiable evidence and promotes only what survives.
+3. **Agent-native Alpha Factory** — humans or AI agents generate hypotheses at scale under bounded scientific search, then consume accepted alpha through machine-readable interfaces.
+
+The private `curren-research` repository is the scientific Alpha Factory authority. `woodsbot-system` is the first live signal/lifecycle/distribution consumer. This public repository owns the sanitized product/API boundary; it does not expose private alpha logic.
+
+User hypotheses and strategy logic are **private by default**. Curren must not silently reuse or distribute a user's private alpha. See [`docs/PRODUCT_THESIS.md`](docs/PRODUCT_THESIS.md) for the canonical product thesis and ownership boundaries.
+
+Verification and provenance remain core primitives, but they support the product promise rather than replacing it: the commercial job is to move from **hypothesis → validated alpha → deployment/distribution → prospective outcome**.
+
+**DO NOT OVERENGINEER.**
 ## Project status
 
 **Current release line: v0.4.0 (alpha).** The public platform and contracts are implemented; the remaining production integration is the private `woodsbot-system` projector plus deployment/entitlement wiring. Until that feed is deployed, `https://api.curren.tech` should be treated as the production-default endpoint contract, not as a promise that live signal data is already available.
