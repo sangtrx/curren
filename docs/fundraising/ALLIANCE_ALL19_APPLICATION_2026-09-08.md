@@ -13,8 +13,10 @@ This is the source-controlled review packet for Curren's Alliance ALL19 applicat
 - ALL19 starts: **2027-01-11**
 - Current official economics, rechecked 2026-09-21: **$500K at a $5M post-money valuation via SAFE + 1:1 token side letter**. Recheck immediately before submission/signing because program terms can change.
 - Recheck economics immediately before submission and before signing. Alliance has changed its published terms across recent cohorts.
-- Current form publicly exposes only the first founder-email step before the applicant proceeds and agrees to application-status email communications. Do not infer that the downstream form is unchanged.
-- The field map below is based on the current live entry step plus Alliance's longstanding application schema visible in prior public application captures/rehosts. Recheck every downstream label/required flag after entering the live form.
+- Sang explicitly authorized the founder-email consent step on 2026-09-18 for bounded live-form inspection; that step was completed and the current ALL19 Company step was captured in `sangtrx/sang-workspace#69`.
+- Captured required Company-step fields include company name; <=50-character what-you-are-building line; one-paragraph pitch; **Founder Intro URL**; founder region plus exact city/country; predominant work environment; numeric team size; and a permanent-relocation answer. Website and company X are optional on this step.
+- **Founder Intro URL is required** in the captured form: an unlisted YouTube video <=1 minute with all founders on camera, introducing the startup idea/founders, with no product demo, presentation, or screen recording.
+- Recheck the live form immediately before final submission because labels, requirements, and limits can still change after the 2026-09-18 capture.
 - Do not submit automatically, sign investment documents, or create legal/financial facts that are not already known.
 
 ## Current source truth
@@ -45,11 +47,11 @@ This is the source-controlled review packet for Curren's Alliance ALL19 applicat
 
 `tqsang97@gmail.com`
 
-Note: proceeding from this step carries an application-status email communication consent. Do not advance on Sang's behalf merely to inspect fields.
+The founder-email consent step was explicitly authorized by Sang and completed on 2026-09-18 for bounded inspection. This authorization does **not** include final Submit or acceptance/signing of investment terms.
 
-## Working downstream field map
+## Captured Company step + prepared downstream answers
 
-The labels below have appeared consistently in Alliance's historical application form. Treat them as prepared answers, not proof that ALL19 uses identical wording/order.
+The Company-step requirements below come from the 2026-09-18 live-form capture in `sangtrx/sang-workspace#69`. Later-step answers remain prepared drafting input unless separately captured from the live form.
 
 ### Company name
 
@@ -85,9 +87,11 @@ Curren is building an Alpha OS with one engine and three user surfaces.
 
 Underneath this product, Curren separates scientific research, live decision/lifecycle processing, sanitized publication and execution authority. The public developer platform is alpha; the live public publication path is not claimed active until separately verified. User hypotheses and strategy logic are private by default.
 
-### Founder video — optional if the live form still makes it optional
+### Founder Intro URL — required in the captured live form
 
-**Prepared but not uploaded.** Use the current 60-second Alliance founder script from the Linear application-drafts document. Do not block submission solely on this artifact if the live ALL19 form confirms it remains optional.
+**Required blocker; real artifact not yet recorded.** The captured ALL19 Company step requires an **unlisted YouTube** founder-intro video **<=1 minute**, with all founders on camera introducing the startup idea/founders and **no product demo, presentation, or screen recording**.
+
+Use the current 60-second Alliance founder script only as drafting input. Do **not** invent a URL, and do not progress past this required field until a real source-backed founder-video artifact exists.
 
 ### Demo — optional if the live form still makes it optional
 
@@ -97,7 +101,7 @@ Until that happens, **do not use `/investors` as a live demo URL**. The public d
 
 ### Where are the founders located?
 
-**Asia — Vietnam**
+The captured Company step requires **founder region plus exact city/country**. Current packet truth is **Vietnam**; use Sang's current source-backed city/country at form time rather than guessing or substituting a stale location.
 
 ### First Name (1st Founder)
 
@@ -134,6 +138,18 @@ I completed a Master of Science in Computer Engineering at the University of Ark
 While building Curren's research stack, I repeatedly found that attractive trading hypotheses became much weaker once I enforced point-in-time data, explicit out-of-sample gates, and no-retuning rules. Instead of relaxing those rules or cherry-picking a backtest, I rebuilt the workflow around preserving failures as evidence. In the latest frozen representative campaign, the system completed all 88 planned trials and promoted zero survivors, with no retuning.
 
 I consider that result useful rather than embarrassing: it forced the product away from "trust this winning backtest" and toward a harder, more defensible problem — making every market decision verifiable from the moment it is made through its final outcome.
+
+### Predominant work environment — required in the captured Company step
+
+**UNRESOLVED — use the truthful current working arrangement from the live form choices; do not optimize or guess.**
+
+### Numeric team size — required in the captured Company step
+
+**1**
+
+### Permanent relocation — required in the captured Company step
+
+**UNRESOLVED REQUIRED FOUNDER ANSWER.** The captured form requires an answer about permanent relocation. Existing willingness to attend Alliance's NYC onboarding/Demo Day and to go full-time if accepted/funded does **not** by itself establish willingness to relocate permanently. Sang must provide the truthful answer before this required field is completed.
 
 ### Additional founders / when founders met
 
@@ -249,17 +265,23 @@ Alliance is unusually relevant because it is crypto/fintech-native, accepts deep
 
 - Curren is pre-revenue / low traction — Alliance explicitly accepts this stage.
 - Solo founder — Alliance explicitly accepts solo founders.
-- Founder video, if the current ALL19 form still labels it optional.
 - Live `/investors` demo, if the current ALL19 form still labels demo optional; the GitHub developer surface can support technical diligence without pretending the production investor route is live.
+
+### Required live-form blockers / founder inputs
+
+- **Founder Intro URL:** required; real unlisted YouTube <=1 minute artifact is not yet recorded.
+- **Permanent relocation answer:** required and must come from Sang; do not infer it from willingness to attend onboarding/Demo Day or go full-time.
 
 ### Must be rechecked in the live form before final submission
 
-1. Every downstream ALL19 field label, required/optional flag, and character/word limit after the founder-email consent step.
+1. Recheck every captured Company-step label, required flag, and limit against the live form, then capture any later steps before relying on prepared historical-schema answers.
 2. Current economics immediately before submission and again before signing.
-3. Whether a personal X profile is required.
-4. The truthful "How did you hear about Alliance?" choice.
-5. Whether there is a genuine Alliance member/founder referral.
-6. Whether SAN-119 has been explicitly approved, deployed at the accepted SHA, and publicly verified before using `https://curren.tech/investors`.
+3. The required Founder Intro URL points to the real <=1-minute unlisted YouTube artifact and follows the captured no-demo/no-presentation/no-screen-recording rule.
+4. The required permanent-relocation answer is supplied truthfully by Sang.
+5. Whether a personal X profile is required.
+6. The truthful "How did you hear about Alliance?" choice.
+7. Whether there is a genuine Alliance member/founder referral.
+8. Whether SAN-119 has been explicitly approved, deployed at the accepted SHA, and publicly verified before using `https://curren.tech/investors`.
 
 ## Final truth check
 
