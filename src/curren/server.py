@@ -29,6 +29,9 @@ from curren.store import AccessPolicy, PublicationConflict, ReadStore, SignalNot
 
 _SYMBOL_RE = re.compile(r"^[A-Z0-9._-]{2,32}$")
 _ALLOWED_TIERS = frozenset({"premium", "agent"})
+# Literal status: Starlette renamed/deprecated HTTP_422_UNPROCESSABLE_ENTITY and the
+# replacement name does not exist in older supported FastAPI/Starlette releases.
+_UNPROCESSABLE = 422
 
 
 @dataclass(frozen=True)
@@ -222,7 +225,7 @@ def create_app(
         except PublicationConflict as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
         except ValueError as exc:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+            raise HTTPException(status_code=_UNPROCESSABLE, detail=str(exc)) from exc
 
     return app
 
@@ -390,7 +393,7 @@ def _clean_secret(value: str | None) -> str | None:
 def _symbol(value: str) -> str:
     normalized = value.strip().upper()
     if not _SYMBOL_RE.fullmatch(normalized):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid symbol")
+        raise HTTPException(status_code=_UNPROCESSABLE, detail="invalid symbol")
     return normalized
 
 
@@ -398,7 +401,7 @@ def _signal_id(value: str) -> str:
     try:
         return normalize_signal_id(value)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid signal id") from exc
+        raise HTTPException(status_code=_UNPROCESSABLE, detail="invalid signal id") from exc
 
 
 def _positive_int(value: int | None, fallback: int) -> int:
@@ -425,7 +428,12 @@ def _nonnegative_int_env(name: str, default: int) -> int:
     return _nonnegative_int(int(raw) if raw is not None else None, default)
 
 
-app = create_app()
+def __getattr__(name: str) -> Any:
+    # Build the ASGI app on demand (e.g. `uvicorn curren.server:app`) instead of at
+    # import time, so importing this module never reads env or creates a database.
+    if name == "app":
+        return create_app()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 if __name__ == "__main__":

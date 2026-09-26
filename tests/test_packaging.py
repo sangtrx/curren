@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -35,3 +38,26 @@ def test_release_version_is_consistent_across_distribution_surfaces() -> None:
     assert f"curren-publisher/{version}" in sources
     assert f'version="{version}"' in sources
 
+
+def test_importing_server_has_no_database_or_env_side_effects(tmp_path) -> None:
+    environment = {**os.environ, "CURREN_API_KEYS_JSON": "not-json"}
+    environment.pop("CURREN_DB_PATH", None)
+    completed = subprocess.run(
+        [sys.executable, "-c", "import curren.server"],
+        cwd=tmp_path,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert not (tmp_path / ".local").exists()
+
+
+def test_server_module_still_exposes_asgi_app_on_demand(tmp_path, monkeypatch) -> None:
+    import curren.server
+
+    monkeypatch.setenv("CURREN_DB_PATH", str(tmp_path / "curren.db"))
+    assert curren.server.app.title == "Curren API"
+    assert (tmp_path / "curren.db").exists()
