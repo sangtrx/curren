@@ -41,7 +41,20 @@ The landing replica follows the same public-tier boundary as the canonical Curre
 - terminal `closed` results may expose realized R, close time, and normalized exit reason;
 - stale publisher state must not be labelled live.
 
-The Edge Function validates the bounded publication shape, rejects unsupported top-level/signal fields, enforces normalized identifiers/statuses, rejects malformed/future timestamps, enforces source ownership, and ignores equal/older `generated_at` snapshots.
+The replica views still withhold terminal entry, stop and targets, although the canonical API reveals stored levels once a signal is terminal. Exposing them here, an explicit exit price, a peak-observation time, and any outcome-correction policy are open decisions on `sangtrx/sang-workspace#464`. Field meanings follow `docs/API_CONTRACT.md` ("Result semantics").
+
+## Write path
+
+The Edge Function validates the same strict `PublicationBatch` shape as the canonical API: unknown fields at any level, zone-less timestamps, duplicate signal ids, invalid targets or lifecycle events, and a `generated_at` that predates the projected state or runs ahead of the server clock are rejected with `422`. It then applies the whole batch with one call to `public.curren_ingest_publication` (migration `supabase/migrations/20260927090000_publication_ingest_parity.sql`), which runs in a single transaction with the canonical read-model rules:
+
+- equal/older `generated_at` snapshots are stale-ignored per signal;
+- source ownership, symbol, side, `published_at`, entry, stop and target prices are fixed after first publication;
+- a terminal signal cannot return to a live state;
+- a terminal outcome and its projection (status, realized R, close time, exit reason, terminal mark, peak R, target hit state) cannot be rewritten; `current_r` is live-only and stored as `null` once terminal;
+- lifecycle events are append-only in `public.lifecycle_events`, identified by `(signal_id, event_type, event_at)`;
+- any conflict returns `409` with the canonical `<reason> for <signal_id>` detail and leaves the replica unchanged.
+
+Rows replicated before this migration are treated as recorded outcomes: they stay locked, and their targets are stored on the first accepted replay. Timestamps are stored at millisecond precision, the precision those rows already use. The empty `public.signal_targets` and `public.signal_lifecycle` tables from the first migration are no longer written by anything and were left in place.
 
 ## Freshness behavior
 
@@ -66,7 +79,9 @@ Current production migrations:
 
 The three base tables have RLS enabled. Anonymous clients have no INSERT/UPDATE/DELETE privileges. Anonymous access is restricted to the landing read views and safe column-level reads needed by their security-invoker definitions. In particular, anonymous clients cannot read `signals.entry`, `signals.stop`, `signals.source`, `signal_targets`, or `signal_lifecycle`.
 
-Supabase Security Advisor must remain clean after schema/RLS changes.
+The ingest migration keeps its new objects private: `public.signals.targets` and `public.lifecycle_events` have no anonymous or signed-in grants (RLS on, no policies), and only `service_role` may execute `public.curren_ingest_publication`. The migration refuses to run if `anon` or `authenticated` holds a table-level `SELECT` on `public.signals`, because the new column would then become readable.
+
+Supabase Security Advisor must remain clean after schema/RLS changes. The two earlier production migrations are not in source control; capture the live schema into `supabase/migrations/` (for example with `supabase db pull`) before the next schema change.
 
 ## Edge Function
 
@@ -88,6 +103,16 @@ Authorization: Bearer <publisher secret>
 ```
 
 Do not commit or print the publisher secret.
+
+Deployment order: apply the ingest migration, then deploy the function. Both are production operations that need explicit operator authorization. A function deployed without the migration fails closed with `500` and changes nothing, and the publisher replays from its unchanged checkpoint.
+
+Local verification against Postgres, PostgREST and the real function (needs Docker):
+
+```bash
+CURREN_SUPABASE_BRIDGE_PARITY=1 pytest -q tests/test_supabase_bridge_parity.py
+```
+
+It sends the same batches to the canonical FastAPI read model and to this bridge and requires identical results. `tests/supabase_bridge/baseline.sql` stands in for the unversioned earlier migrations.
 
 ## Woodsbot activation contract
 
@@ -115,4 +140,4 @@ At the 2026-09-08 hardening checkpoint the Supabase schema/RLS/views and Edge Fu
 
 At the 2026-09-18 activation checkpoint a bounded one-shot publication cycle from the private publisher was accepted and verified in the replica (sanitized rows only; public delay/RLS policy intact). Continuous publication was **not** enabled. The replica therefore holds a point-in-time backfill, not evidence of a live feed; active rows age out of `public_live_signals` through the freshness window rather than being presented as live.
 
-An earlier unbounded backfill attempt exceeded the private publisher's read timeout because this Edge Function performs sequential, non-transactional per-signal read/upsert round trips. A bulk write path in the bridge would remove the need for the publisher to bound its one-shot batches.
+An earlier unbounded backfill attempt exceeded the private publisher's read timeout because the v2 Edge Function performed sequential, non-transactional per-signal read/upsert round trips. The current source applies each batch in one transactional database call; it is not deployed yet.

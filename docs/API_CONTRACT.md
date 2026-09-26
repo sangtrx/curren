@@ -99,7 +99,7 @@ Track record is derived only from immutable `closed` outcome records with non-nu
   "net_r": 24.1,
   "average_r": 0.241,
   "as_of": "2026-08-23T12:00:00Z",
-  "methodology": "Immutable terminal outcome records with a recorded realized R multiple."
+  "methodology": "Immutable terminal outcome records with a recorded realized R multiple; wins, losses and breakeven are classified by the sign of realized R."
 }
 ```
 
@@ -246,7 +246,20 @@ When a signal first becomes `closed` or `expired`, Curren records a separate can
 - `exit_reason`;
 - outcome record version.
 
-That first terminal snapshot also freezes the public terminal result projection (target hit state, mark/current R/peak R, outcome fields). A newer cumulative snapshot may add previously unseen lifecycle events but cannot rewrite already-published terminal result context. Conflicts return HTTP `409` atomically.
+That first terminal snapshot also freezes the public terminal result projection (target hit state, terminal mark, peak R, outcome fields). `current_r` is live-only: terminal rows store and return `null`, and a terminal `current_r` sent by a producer is ignored rather than frozen. A newer cumulative snapshot may add previously unseen lifecycle events but cannot rewrite already-published terminal result context. Conflicts return HTTP `409` atomically: nothing in the batch is applied.
+
+A `409` detail always names one signal as `<reason> for <signal_id>`. The reasons are:
+
+```text
+publication source changed
+terminal signal cannot return to a live state
+immutable publication fields changed
+immutable terminal outcome changed
+immutable terminal projection changed
+immutable lifecycle event changed
+```
+
+Publishers may rely on this form to isolate the conflicting signal. Changing a published outcome is a correction and needs an explicit correction policy; the read model never rewrites one silently.
 
 Current record versions:
 
@@ -265,3 +278,13 @@ signal-outcome.v1
 - `closed_at`: terminal outcome time.
 
 The server enforces `CURREN_PUBLIC_DELAY_SECONDS` as a minimum before public live visibility.
+
+## Result semantics
+
+- `mark`: on live rows, the latest producer-observed market price in the snapshot. On terminal rows, the producer's terminal reference price, frozen with the outcome (for Woodsbot, the price of the terminal lifecycle event). It is not an average exit price and is not a result.
+- `current_r`: unrealized R of the open position at `mark`. Live rows only; terminal rows return `null`.
+- `peak_r`: the best favorable excursion observed so far, in R. It is observed, not banked, and is frozen at close. No observation time is published.
+- `realized_r`: the booked terminal result in R, including partial exits taken before the final exit. It is the only result field. A breakeven stop after a partial take-profit therefore has a positive `realized_r`.
+- Track record: wins, losses and breakeven are classified only by the sign of `realized_r`. Runtime labels such as breakeven-after-partial are not published, so counts can differ from the private runtime's own statistics.
+- Results and the track record are in R. They are not notional/dollar returns or an equity curve.
+- Levels: public pending/active rows omit entry, stop and targets; terminal rows reveal the stored levels. Contract v1 has no explicit exit-price field and no peak-observation time.

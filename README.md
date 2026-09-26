@@ -168,7 +168,7 @@ curren-publish examples/publication.example.json
 
 For each signal id Curren stores the publication source and latest accepted `generated_at`. An equal/older projection is counted as `stale_ignored` and cannot roll state backward. The first accepted `public_available_at` schedule is also retained; later projections cannot hide or accelerate an already scheduled public release.
 
-The initial publication hash locks signal id, symbol, side, publication timestamp, entry, stop, and ordered target prices. Lifecycle identities are append-only. The first terminal snapshot records an immutable outcome hash, and its terminal result projection is frozen as well; later attempts to rewrite result/target/PnL context return HTTP `409`.
+The initial publication hash locks signal id, symbol, side, publication timestamp, entry, stop, and ordered target prices. Lifecycle identities are append-only. The first terminal snapshot records an immutable outcome hash, and its terminal result projection (target state, terminal mark, peak R) is frozen as well; later attempts to rewrite it return HTTP `409`. `current_r` is live-only and `null` once a signal is terminal; `realized_r` is the result.
 
 `/v1/results` only exposes terminal rows backed by an immutable outcome record. Track-record statistics are also computed only from those immutable outcome records.
 

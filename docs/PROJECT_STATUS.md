@@ -1,6 +1,6 @@
 # Curren Public Platform Status
 
-Last reviewed: 2026-09-26
+Last reviewed: 2026-09-27
 
 Current release line: **v0.4.0 (alpha)**.
 
@@ -46,6 +46,7 @@ It is also not the private signal generator (`woodsbot-system`), quantitative re
 - `public_feed_status` distinguishes `idle`, `fresh`, and `stale` replica state.
 - Anonymous writes are revoked; base tables use RLS; the public views use `security_invoker`.
 - `supabase/functions/curren-api/index.ts` is the source authority for the Supabase publication bridge. The deployed v2 bridge enforces its own publisher Bearer authorization, the 1800-second minimum public delay, source ownership, bounded batch size, future-clock guard, and monotonic replay watermark.
+- The current bridge source plus `supabase/migrations/20260927090000_publication_ingest_parity.sql` apply the canonical read-model rules to the replica: strict batch validation, one transaction per batch, fixed publication identity, terminal outcome/projection lock, and append-only lifecycle. They are **not yet applied or deployed**; the deployed v2 bridge still stores signal rows only and can overwrite a published outcome.
 - See `docs/SUPABASE_READ_MODEL.md` for the exact landing-replica contract and activation procedure.
 
 ### Clients/integrations
@@ -169,6 +170,12 @@ For Omarchy changes also run on Omarchy 4/Quattro:
 
 ```bash
 omarchy plugin validate .
+```
+
+For Supabase bridge or migration changes also run the Docker-backed parity check against the FastAPI reference:
+
+```bash
+CURREN_SUPABASE_BRIDGE_PARITY=1 pytest -q tests/test_supabase_bridge_parity.py
 ```
 
 For the Supabase landing replica, additionally verify the current migration list, RLS/grants, `security_invoker` views, Security Advisor, deployed Edge Function source/version, and a bounded publisher cycle before calling the feed active.
