@@ -264,6 +264,9 @@ STEPS: list[tuple[str, dict, int]] = [
     ("prices must be positive", _batch(81, _signal("crn_sig_x", mark=0.0)), 422),
     ("side is an exact enum", _batch(82, _signal("crn_sig_x", side="LONG")), 422),
     ("at most 16 targets", _batch(83, _signal("crn_sig_x", targets=[{"price": 2550.0 + i} for i in range(17)])), 422),
+    ("impossible calendar dates are rejected", _batch(84, _signal("crn_sig_x", published_at="2026-02-30T00:00:00Z")), 422),
+    ("year zero is rejected", _batch(85, _signal("crn_sig_x", published_at="0000-01-01T00:00:00Z")), 422),
+    ("a batch without signals is empty", {"source": "woodsbot-system", "generated_at": _t(86)}, 200),
 ]
 
 
@@ -360,10 +363,14 @@ def test_new_objects_stay_private(replica: Replica) -> None:
         "select * from public.lifecycle_events",
         "select public.curren_ingest_publication('x', now(), '[]'::jsonb)",
     )
-    for statement in denied:
-        output = replica.sql(f"set role anon; {statement};", check=False)
-        assert "permission denied" in output, statement
+    for role in ("anon", "authenticated"):
+        for statement in denied:
+            output = replica.sql(f"set role {role}; {statement};", check=False)
+            assert "permission denied" in output, (role, statement)
     assert replica.sql("set role anon; select count(*) >= 0 from public.signals;") == "t"
+    # Append-only even for the service role; FK cascades from signals still apply.
+    output = replica.sql("set role service_role; delete from public.lifecycle_events;", check=False)
+    assert "permission denied" in output
 
 
 def test_migration_refuses_when_anon_can_read_signal_rows(replica: Replica) -> None:

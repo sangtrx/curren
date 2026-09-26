@@ -7,7 +7,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 const SIGNAL_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SYMBOL = /^[A-Z0-9._-]{2,32}$/;
 const PUBLIC_NAME = /^[a-z0-9][a-z0-9._:-]{0,63}$/;
-const ZONED_TIMESTAMP = /^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?([Zz]|[+-]\d{2}:\d{2})$/;
+const ZONED_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})[Tt ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?([Zz]|[+-]\d{2}:\d{2})$/;
 const SIGNAL_STATUSES = new Set(["pending", "active", "closed", "expired"]);
 const TERMINAL_STATUSES = new Set(["closed", "expired"]);
 const SIGNAL_SIDES = new Set(["long", "short"]);
@@ -81,11 +81,16 @@ const optionalList = (value: unknown, label: string, max: number): unknown[] => 
 // Timestamps must carry an explicit zone. They are stored at millisecond precision, the precision
 // every row in the replica already uses, so replayed snapshots compare equal.
 const timestamp = (value: unknown, label: string): Date => {
-  if (typeof value !== "string" || !ZONED_TIMESTAMP.test(value.trim())) {
-    throw new RequestError(422, `${label} must be an ISO timestamp with a timezone`);
-  }
-  const parsed = new Date(value.trim());
-  if (!Number.isFinite(parsed.getTime())) {
+  const text = typeof value === "string" ? value.trim() : "";
+  const match = ZONED_TIMESTAMP.exec(text);
+  const parsed = new Date(text);
+  // Date silently rolls impossible days over (2026-02-30 -> 2026-03-02); reject them instead.
+  const [year, month, day] = match ? match.slice(1, 4).map(Number) : [0, 0, 0];
+  const calendarDay = new Date(Date.UTC(year, month - 1, day));
+  if (
+    !match || !Number.isFinite(parsed.getTime()) || year < 1 ||
+    calendarDay.getUTCMonth() !== month - 1 || calendarDay.getUTCDate() !== day
+  ) {
     throw new RequestError(422, `${label} must be an ISO timestamp with a timezone`);
   }
   return parsed;
@@ -337,12 +342,9 @@ Deno.serve(async (req: Request) => {
       throw new RequestError(422, "generated_at exceeds allowed clock skew");
     }
 
-    if (!Array.isArray(payload.signals) || payload.signals.length > MAX_SIGNALS) {
-      throw new RequestError(422, `signals must be an array of at most ${MAX_SIGNALS} items`);
-    }
-
+    const signals = optionalList(payload.signals, "signals", MAX_SIGNALS);
     const publicDelaySeconds = integerEnv("CURREN_PUBLIC_DELAY_SECONDS", 1800, 0, 86400);
-    const rows = payload.signals.map((signal) => normalizeSignal(signal, generatedAt, publicDelaySeconds));
+    const rows = signals.map((signal) => normalizeSignal(signal, generatedAt, publicDelaySeconds));
     const seen = new Set<string>();
     for (const row of rows) {
       if (seen.has(row.id)) throw new RequestError(422, `duplicate signal id in publication batch: ${row.id}`);

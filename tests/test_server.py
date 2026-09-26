@@ -264,7 +264,7 @@ async def test_terminal_projection_context_cannot_be_rewritten_after_close(app, 
 
 @pytest.mark.asyncio
 async def test_terminal_current_r_is_live_only_and_not_frozen(app, active_payload) -> None:
-    # WoodsBot publishes 0.0 for a closed row today; a producer may send null instead.
+    # The first terminal snapshot carries a numeric current_r; a later replay may send null.
     closed = _closed_payload(active_payload)
     replay = _closed_payload(active_payload, generated_at="2026-08-23T12:21:00Z")
     replay["signals"][0]["current_r"] = None

@@ -27,7 +27,7 @@ $$;
 
 -- Target plan and hit state (FastAPI: signals.targets_json). NULL only on rows replicated before
 -- this migration; the next accepted snapshot stores them.
-alter table public.signals add column if not exists targets jsonb;
+alter table public.signals add column targets jsonb;
 
 -- Append-only lifecycle (FastAPI: lifecycle_events). Identity is (signal_id, event_type, event_at).
 create table public.lifecycle_events (
@@ -45,6 +45,7 @@ alter table public.lifecycle_events enable row level security;
 revoke all on table public.lifecycle_events from public, anon, authenticated;
 revoke all on sequence public.lifecycle_events_id_seq from public, anon, authenticated;
 grant select, insert on table public.lifecycle_events to service_role;
+revoke update, delete, truncate on table public.lifecycle_events from service_role;
 
 create function public.curren_ingest_publication(
   p_source text,

@@ -1,6 +1,6 @@
 # Curren Supabase landing read model
 
-Status: source-backed and deployed as a bounded landing-page replica. Private runtime publication remains disabled until the production publisher is explicitly activated and verified.
+Status: deployed as a bounded landing-page replica with the v2 publication bridge. The source in this repository is ahead of that deployment (see "Write path"). Private runtime publication remains disabled until the production publisher is explicitly activated and verified.
 
 ## Scope
 
@@ -81,7 +81,7 @@ The three base tables have RLS enabled. Anonymous clients have no INSERT/UPDATE/
 
 The ingest migration keeps its new objects private: `public.signals.targets` and `public.lifecycle_events` have no anonymous or signed-in grants (RLS on, no policies), and only `service_role` may execute `public.curren_ingest_publication`. The migration refuses to run if `anon` or `authenticated` holds a table-level `SELECT` on `public.signals`, because the new column would then become readable.
 
-Supabase Security Advisor must remain clean after schema/RLS changes. The two earlier production migrations are not in source control; capture the live schema into `supabase/migrations/` (for example with `supabase db pull`) before the next schema change.
+Supabase Security Advisor must remain clean after schema/RLS changes; the INFO-level "RLS enabled, no policy" notice for `public.lifecycle_events` is intended (deny-all to API roles). The two earlier production migrations are not in source control.
 
 ## Edge Function
 
@@ -104,7 +104,14 @@ Authorization: Bearer <publisher secret>
 
 Do not commit or print the publisher secret.
 
-Deployment order: apply the ingest migration, then deploy the function. Both are production operations that need explicit operator authorization. A function deployed without the migration fails closed with `500` and changes nothing, and the publisher replays from its unchanged checkpoint.
+Deployment order. Every step is a production operation that needs explicit operator authorization:
+
+1. Capture the live `public` schema into `supabase/migrations/` (for example with `supabase db pull`, which also records the two earlier remote-only versions). Check that `public.signals` still has the columns and privileges `tests/supabase_bridge/baseline.sql` assumes, update the baseline if it differs, and rerun the parity check.
+2. Apply the ingest migration.
+3. Deploy the function.
+4. Run one bounded publisher cycle and verify it, as in the activation contract below.
+
+A function deployed without the migration fails closed with `500` and changes nothing, and the publisher replays from its unchanged checkpoint.
 
 Local verification against Postgres, PostgREST and the real function (needs Docker):
 
@@ -112,7 +119,7 @@ Local verification against Postgres, PostgREST and the real function (needs Dock
 CURREN_SUPABASE_BRIDGE_PARITY=1 pytest -q tests/test_supabase_bridge_parity.py
 ```
 
-It sends the same batches to the canonical FastAPI read model and to this bridge and requires identical results. `tests/supabase_bridge/baseline.sql` stands in for the unversioned earlier migrations.
+It sends the same batches to the canonical FastAPI read model and to this bridge. For every batch it requires the same status code, the same counts when accepted and the same detail on a `409`, and it compares the final stored state of one signal. It also covers the lock on pre-migration rows, the privacy of the new objects and the migration's refusal guard. `tests/supabase_bridge/baseline.sql` stands in for the unversioned earlier migrations.
 
 ## Woodsbot activation contract
 

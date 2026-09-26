@@ -281,10 +281,10 @@ The server enforces `CURREN_PUBLIC_DELAY_SECONDS` as a minimum before public liv
 
 ## Result semantics
 
-- `mark`: on live rows, the latest producer-observed market price in the snapshot. On terminal rows, the producer's terminal reference price, frozen with the outcome (for Woodsbot, the price of the terminal lifecycle event). It is not an average exit price and is not a result.
+- `mark`: on live rows, the latest producer-observed market price in the snapshot. On terminal rows, the producer's terminal reference price, frozen with the outcome (the current Woodsbot projector uses the price of the terminal lifecycle event). It is not an average exit price and is not a result.
 - `current_r`: unrealized R of the open position at `mark`. Live rows only; terminal rows return `null`.
 - `peak_r`: the best favorable excursion observed so far, in R. It is observed, not banked, and is frozen at close. No observation time is published.
-- `realized_r`: the booked terminal result in R, including partial exits taken before the final exit. It is the only result field. A breakeven stop after a partial take-profit therefore has a positive `realized_r`.
+- `realized_r`: the booked terminal result in R, including partial exits taken before the final exit. It is the only result field, so a stop at entry after a partial take-profit can still have a positive `realized_r`.
 - Track record: wins, losses and breakeven are classified only by the sign of `realized_r`. Runtime labels such as breakeven-after-partial are not published, so counts can differ from the private runtime's own statistics.
 - Results and the track record are in R. They are not notional/dollar returns or an equity curve.
 - Levels: public pending/active rows omit entry, stop and targets; terminal rows reveal the stored levels. Contract v1 has no explicit exit-price field and no peak-observation time.
