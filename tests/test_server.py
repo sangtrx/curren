@@ -263,6 +263,41 @@ async def test_terminal_projection_context_cannot_be_rewritten_after_close(app, 
 
 
 @pytest.mark.asyncio
+async def test_terminal_current_r_is_live_only_and_not_frozen(app, active_payload) -> None:
+    # WoodsBot publishes 0.0 for a closed row today; a producer may send null instead.
+    closed = _closed_payload(active_payload)
+    replay = _closed_payload(active_payload, generated_at="2026-08-23T12:21:00Z")
+    replay["signals"][0]["current_r"] = None
+
+    async with await _client(app) as client:
+        await client.post(
+            "/internal/v1/publications",
+            json=active_payload,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        first = await client.post(
+            "/internal/v1/publications",
+            json=closed,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        replayed = await client.post(
+            "/internal/v1/publications",
+            json=replay,
+            headers={"Authorization": "Bearer ingest-secret"},
+        )
+        signal = await client.get("/v1/signals/crn_sig_1")
+        results = await client.get("/v1/results")
+
+    assert first.status_code == 200
+    assert replayed.status_code == 200
+    assert replayed.json()["updated"] == 1
+    assert replayed.json()["outcome_records_inserted"] == 0
+    assert signal.json()["current_r"] is None
+    assert signal.json()["realized_r"] == 2.0
+    assert results.json()["items"][0]["current_r"] is None
+
+
+@pytest.mark.asyncio
 async def test_stale_projection_is_ignored_without_rolling_back_state(app, active_payload) -> None:
     newer = {**active_payload, "generated_at": "2026-08-23T12:11:00Z"}
     newer["signals"] = [dict(active_payload["signals"][0])]

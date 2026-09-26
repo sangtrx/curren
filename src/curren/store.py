@@ -320,7 +320,10 @@ class ReadStore:
             net_r=net_r,
             average_r=(net_r / sample) if sample else None,
             as_of=datetime.now(UTC),
-            methodology="Immutable terminal outcome records with a recorded realized R multiple.",
+            methodology=(
+                "Immutable terminal outcome records with a recorded realized R multiple; wins, losses and "
+                "breakeven are classified by the sign of realized R."
+            ),
         )
 
     def verification(
@@ -469,7 +472,7 @@ class ReadStore:
                 signal.stop,
                 targets_json,
                 signal.mark,
-                signal.current_r,
+                None if signal.status.value in TERMINAL_STATUSES else signal.current_r,
                 signal.peak_r,
                 signal.realized_r,
                 _iso(_utc(signal.closed_at)) if signal.closed_at else None,
@@ -584,7 +587,7 @@ class ReadStore:
             stop=row["stop"] if reveal_levels else None,
             targets=targets,
             mark=row["mark"],
-            current_r=row["current_r"],
+            current_r=None if terminal else row["current_r"],
             peak_r=row["peak_r"],
             realized_r=row["realized_r"],
             closed_at=closed_at,
@@ -643,11 +646,12 @@ def _canonical_outcome(signal: PublicationSignal) -> str:
 
 
 def _terminal_projection_snapshot(signal: PublicationSignal, *, targets_json: str) -> str:
+    # current_r is live-only: a closed signal has no open remainder, so terminal rows store none
+    # and a producer's terminal value (0.0 or null) is neither kept nor frozen.
     payload = {
         "status": signal.status.value,
         "targets": json.loads(targets_json),
         "mark": signal.mark,
-        "current_r": signal.current_r,
         "peak_r": signal.peak_r,
         "realized_r": signal.realized_r,
         "closed_at": _iso(_utc(signal.closed_at)) if signal.closed_at else None,
@@ -661,7 +665,6 @@ def _terminal_projection_snapshot_from_row(row: sqlite3.Row) -> str:
         "status": row["status"],
         "targets": json.loads(row["targets_json"] or "[]"),
         "mark": row["mark"],
-        "current_r": row["current_r"],
         "peak_r": row["peak_r"],
         "realized_r": row["realized_r"],
         "closed_at": row["closed_at"],
