@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import sqlite3
 from collections.abc import Iterator
 from contextlib import closing, contextmanager
@@ -44,4 +45,4 @@ def test_status_reads_use_the_status_index(tmp_path) -> None:
     assert reads
     with closing(sqlite3.connect(tmp_path / "curren.db")) as connection:
         plans = [" | ".join(row[3] for row in connection.execute(f"EXPLAIN QUERY PLAN {sql}")) for sql in reads]
-    assert not [plan for plan in plans if "SCAN signals" in plan], plans
+    assert not [plan for plan in plans if re.search(r"\bSCAN (TABLE )?signals\b", plan)], plans

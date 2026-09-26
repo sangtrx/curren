@@ -75,7 +75,7 @@ The public platform is not itself the Curren signal generator. The source-side p
    - the standalone sanitized projector is implemented and failure-isolated;
    - it remains disabled by default;
    - it must be configured to target the Supabase bridge, run one bounded accepted cycle, and then be verified before continuous publication is enabled;
-   - at the 2026-09-18 activation checkpoint exactly one bounded one-shot cycle was accepted and verified in the Supabase replica, but continuous publication was not enabled, so no live-feed claim is valid.
+   - at the 2026-09-18 activation checkpoint a bounded one-shot cycle was accepted and verified in the Supabase replica, but continuous publication was not enabled, so no live-feed claim is valid.
 2. **Canonical production deployment for `api.curren.tech`**
    - the separate FastAPI public API contract still requires its own verified production deployment if that canonical API hostname is to be marketed as live;
    - TLS/reverse proxy, persistent storage, ingestion network restriction, and global ingress rate limits remain deployment concerns for that service.

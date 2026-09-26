@@ -432,7 +432,9 @@ def __getattr__(name: str) -> Any:
     # Build the ASGI app on demand (e.g. `uvicorn curren.server:app`) instead of at
     # import time, so importing this module never reads env or creates a database.
     if name == "app":
-        return create_app()
+        app = create_app()
+        globals()["app"] = app
+        return app
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

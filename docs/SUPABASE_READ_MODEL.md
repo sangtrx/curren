@@ -113,6 +113,6 @@ A network, authentication, contract, or database failure must leave the Woodsbot
 
 At the 2026-09-08 hardening checkpoint the Supabase schema/RLS/views and Edge Function v2 were deployed with zero replicated rows.
 
-At the 2026-09-18 activation checkpoint exactly one bounded one-shot publication cycle was run against the Edge Function and verified in the replica (sanitized rows only, mostly terminal results, public delay/RLS policy intact). Continuous publication was **not** enabled. The replica therefore holds a point-in-time backfill, not evidence of a live feed; active rows age out of `public_live_signals` through the freshness window rather than being presented as live.
+At the 2026-09-18 activation checkpoint a bounded one-shot publication cycle from the private publisher was accepted and verified in the replica (sanitized rows only; public delay/RLS policy intact). Continuous publication was **not** enabled. The replica therefore holds a point-in-time backfill, not evidence of a live feed; active rows age out of `public_live_signals` through the freshness window rather than being presented as live.
 
-The initial unbounded backfill exceeded the publisher's read timeout because the Edge Function performs sequential per-signal read/upsert round trips; the publisher bounds one-shot batches until the bridge writes in bulk.
+An earlier unbounded backfill attempt exceeded the private publisher's read timeout because this Edge Function performs sequential, non-transactional per-signal read/upsert round trips. A bulk write path in the bridge would remove the need for the publisher to bound its one-shot batches.

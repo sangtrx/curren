@@ -60,4 +60,5 @@ def test_server_module_still_exposes_asgi_app_on_demand(tmp_path, monkeypatch) -
 
     monkeypatch.setenv("CURREN_DB_PATH", str(tmp_path / "curren.db"))
     assert curren.server.app.title == "Curren API"
+    assert curren.server.app is curren.server.app
     assert (tmp_path / "curren.db").exists()
