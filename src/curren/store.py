@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -196,7 +198,7 @@ class ReadStore:
         policy = policy or AccessPolicy()
         now = _utc(now or datetime.now(UTC))
         normalized_status = SignalStatus(status.strip().lower()).value
-        clauses = ["LOWER(status) = ?"]
+        clauses = ["status = ?"]
         parameters: list[Any] = [normalized_status]
 
         if normalized_status in TERMINAL_STATUSES:
@@ -228,7 +230,7 @@ class ReadStore:
                 SELECT s.*
                 FROM signals AS s
                 INNER JOIN outcome_records AS o ON o.signal_id = s.id
-                WHERE LOWER(s.status) IN ('closed', 'expired')
+                WHERE s.status IN ('closed', 'expired')
                 ORDER BY s.closed_at DESC, s.id DESC
                 LIMIT ?
                 """,
@@ -384,7 +386,7 @@ class ReadStore:
                 """
                 SELECT COUNT(*) AS count
                 FROM signals
-                WHERE LOWER(status) = 'active'
+                WHERE status = 'active'
                   AND public_available_at <= ?
                 """,
                 (now,),
@@ -597,12 +599,19 @@ class ReadStore:
             return True
         return _parse_time(row["public_available_at"]) <= now
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
+        # sqlite3's own context manager only commits/rolls back; close explicitly
+        # so every request releases its file handle deterministically.
         connection = sqlite3.connect(self.path, timeout=5.0)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys=ON")
-        connection.execute("PRAGMA busy_timeout=5000")
-        return connection
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute("PRAGMA busy_timeout=5000")
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
 
 def _canonical_snapshot(signal: PublicationSignal) -> str:
