@@ -1,6 +1,6 @@
 # Curren Public Platform Status
 
-Last reviewed: 2026-09-08
+Last reviewed: 2026-09-26
 
 Current release line: **v0.4.0 (alpha)**.
 
@@ -75,14 +75,14 @@ The public platform is not itself the Curren signal generator. The source-side p
    - the standalone sanitized projector is implemented and failure-isolated;
    - it remains disabled by default;
    - it must be configured to target the Supabase bridge, run one bounded accepted cycle, and then be verified before continuous publication is enabled;
-   - at this checkpoint the Supabase `signals` replica contains zero rows, so no live-feed claim is valid.
+   - at the 2026-09-18 activation checkpoint exactly one bounded one-shot cycle was accepted and verified in the Supabase replica, but continuous publication was not enabled, so no live-feed claim is valid.
 2. **Canonical production deployment for `api.curren.tech`**
    - the separate FastAPI public API contract still requires its own verified production deployment if that canonical API hostname is to be marketed as live;
    - TLS/reverse proxy, persistent storage, ingestion network restriction, and global ingress rate limits remain deployment concerns for that service.
 3. **Curren access/entitlement integration**
    - Premium and Agent credentials still need to be provisioned/revoked from the private access control plane rather than static environment configuration.
 
-The Supabase landing read replica does not prove that `https://api.curren.tech` is live. Likewise, deployed Supabase infrastructure with zero replicated rows does not prove that production publication is enabled.
+The Supabase landing read replica does not prove that `https://api.curren.tech` is live. Likewise, rows replicated by a single bounded backfill cycle do not prove that continuous production publication is enabled.
 
 ## Private runtime mapping required
 

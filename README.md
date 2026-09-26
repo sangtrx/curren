@@ -76,6 +76,7 @@ Python 3.11+:
 ```bash
 python -m pip install -e '.[dev,mcp]'
 cp .env.example .env
+set -a; . ./.env; set +a   # curren-api reads the process environment only; it does not load .env itself
 curren-api
 ```
 
