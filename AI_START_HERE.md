@@ -31,10 +31,10 @@ The canonical public landing page is `sangtrx/curren-landing-page` and is a sepa
 ## Sibling ownership
 
 ```text
-curren-research      -> quantitative research / accepted releases
-woodsbot-system      -> private signal/runtime/publication source
-curren-access        -> private access/community/payment truth
-curren-social-factory-> social content rendering/review preparation
+private research system      -> quantitative research / accepted releases
+private signal runtime      -> private signal/runtime/publication source
+private access system        -> private access/community/payment truth
+content pipeline-> social content rendering/review preparation
 curren-landing-page  -> canonical public curren.tech landing page
 curren               -> this public API/CLI/MCP/developer surface
 ```

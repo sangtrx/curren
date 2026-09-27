@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -196,7 +198,7 @@ class ReadStore:
         policy = policy or AccessPolicy()
         now = _utc(now or datetime.now(UTC))
         normalized_status = SignalStatus(status.strip().lower()).value
-        clauses = ["LOWER(status) = ?"]
+        clauses = ["status = ?"]
         parameters: list[Any] = [normalized_status]
 
         if normalized_status in TERMINAL_STATUSES:
@@ -228,7 +230,7 @@ class ReadStore:
                 SELECT s.*
                 FROM signals AS s
                 INNER JOIN outcome_records AS o ON o.signal_id = s.id
-                WHERE LOWER(s.status) IN ('closed', 'expired')
+                WHERE s.status IN ('closed', 'expired')
                 ORDER BY s.closed_at DESC, s.id DESC
                 LIMIT ?
                 """,
@@ -318,7 +320,10 @@ class ReadStore:
             net_r=net_r,
             average_r=(net_r / sample) if sample else None,
             as_of=datetime.now(UTC),
-            methodology="Immutable terminal outcome records with a recorded realized R multiple.",
+            methodology=(
+                "Immutable terminal outcome records with a recorded realized R multiple; wins, losses and "
+                "breakeven are classified by the sign of realized R."
+            ),
         )
 
     def verification(
@@ -384,7 +389,7 @@ class ReadStore:
                 """
                 SELECT COUNT(*) AS count
                 FROM signals
-                WHERE LOWER(status) = 'active'
+                WHERE status = 'active'
                   AND public_available_at <= ?
                 """,
                 (now,),
@@ -467,7 +472,7 @@ class ReadStore:
                 signal.stop,
                 targets_json,
                 signal.mark,
-                signal.current_r,
+                None if signal.status.value in TERMINAL_STATUSES else signal.current_r,
                 signal.peak_r,
                 signal.realized_r,
                 _iso(_utc(signal.closed_at)) if signal.closed_at else None,
@@ -582,7 +587,7 @@ class ReadStore:
             stop=row["stop"] if reveal_levels else None,
             targets=targets,
             mark=row["mark"],
-            current_r=row["current_r"],
+            current_r=None if terminal else row["current_r"],
             peak_r=row["peak_r"],
             realized_r=row["realized_r"],
             closed_at=closed_at,
@@ -597,12 +602,19 @@ class ReadStore:
             return True
         return _parse_time(row["public_available_at"]) <= now
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
+        # sqlite3's own context manager only commits/rolls back; close explicitly
+        # so every request releases its file handle deterministically.
         connection = sqlite3.connect(self.path, timeout=5.0)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys=ON")
-        connection.execute("PRAGMA busy_timeout=5000")
-        return connection
+        try:
+            connection.row_factory = sqlite3.Row
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute("PRAGMA busy_timeout=5000")
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
 
 def _canonical_snapshot(signal: PublicationSignal) -> str:
@@ -634,11 +646,12 @@ def _canonical_outcome(signal: PublicationSignal) -> str:
 
 
 def _terminal_projection_snapshot(signal: PublicationSignal, *, targets_json: str) -> str:
+    # current_r is live-only: a closed signal has no open remainder, so terminal rows store none
+    # and a producer's terminal value (0.0 or null) is neither kept nor frozen.
     payload = {
         "status": signal.status.value,
         "targets": json.loads(targets_json),
         "mark": signal.mark,
-        "current_r": signal.current_r,
         "peak_r": signal.peak_r,
         "realized_r": signal.realized_r,
         "closed_at": _iso(_utc(signal.closed_at)) if signal.closed_at else None,
@@ -652,7 +665,6 @@ def _terminal_projection_snapshot_from_row(row: sqlite3.Row) -> str:
         "status": row["status"],
         "targets": json.loads(row["targets_json"] or "[]"),
         "mark": row["mark"],
-        "current_r": row["current_r"],
         "peak_r": row["peak_r"],
         "realized_r": row["realized_r"],
         "closed_at": row["closed_at"],

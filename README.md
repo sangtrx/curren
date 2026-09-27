@@ -1,14 +1,30 @@
 # Curren
 
-**Verifiable crypto trading intelligence for humans and AI agents.**
+**Alpha infrastructure for traders and AI agents.**
 
-Curren is the public developer/distribution surface for [curren.tech](https://curren.tech/): a read-model API, terminal CLI, MCP server, publication client, and native Omarchy Quattro plugin.
+**Curren turns market hypotheses into validated, deployable alpha — for traders and AI agents.** This repository is the public developer/distribution surface for [curren.tech](https://curren.tech/): a read-model API, terminal CLI, MCP server, publication client, and native Omarchy Quattro plugin.
 
 > The private signal engine, strategy/research logic, raw-source ingestion, AI guard, execution runtime, accounts, and production trading database are intentionally **not** part of this repository.
 
+
+## Company thesis
+
+Curren is being built as an **Alpha OS** with one engine serving three levels of user:
+
+1. **Retail / Signals** — clear entry, stop/invalidation, targets and lifecycle with less manual analysis.
+2. **Research Pro / Team** — a trader brings a hypothesis; Curren turns it into point-in-time, cost-aware, falsifiable evidence and promotes only what survives.
+3. **Agent-native Alpha Factory** — humans or AI agents generate hypotheses at scale under bounded scientific search, then consume accepted alpha through machine-readable interfaces.
+
+The private `private research system` repository is the scientific Alpha Factory authority. `private signal runtime` is the first live signal/lifecycle/distribution consumer. This public repository owns the sanitized product/API boundary; it does not expose private alpha logic.
+
+User hypotheses and strategy logic are **private by default**. Curren must not silently reuse or distribute a user's private alpha. See [`docs/PRODUCT_THESIS.md`](docs/PRODUCT_THESIS.md) for the canonical product thesis and ownership boundaries.
+
+Verification and provenance remain core primitives, but they support the product promise rather than replacing it: the commercial job is to move from **hypothesis → validated alpha → deployment/distribution → prospective outcome**.
+
+**DO NOT OVERENGINEER.**
 ## Project status
 
-**Current release line: v0.4.0 (alpha).** The public platform and contracts are implemented; the remaining production integration is the private `woodsbot-system` projector plus deployment/entitlement wiring. Until that feed is deployed, `https://api.curren.tech` should be treated as the production-default endpoint contract, not as a promise that live signal data is already available.
+**Current release line: v0.4.0 (alpha).** The public platform and contracts are implemented; the remaining production integration is the private `private signal runtime` projector plus deployment/entitlement wiring. Until that feed is deployed, `https://api.curren.tech` should be treated as the production-default endpoint contract, not as a promise that live signal data is already available.
 
 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the exact implemented/pending boundary.
 
@@ -60,6 +76,7 @@ Python 3.11+:
 ```bash
 python -m pip install -e '.[dev,mcp]'
 cp .env.example .env
+set -a; . ./.env; set +a   # curren-api reads the process environment only; it does not load .env itself
 curren-api
 ```
 
@@ -122,7 +139,7 @@ Publication signal status is intentionally small:
 pending | active | closed | expired
 ```
 
-The private projector must normalize internal states. For the current Woodsbot lifecycle that means, for example:
+The private projector must normalize internal states. For the current private producer lifecycle that means, for example:
 
 ```text
 closed_win
@@ -151,7 +168,7 @@ curren-publish examples/publication.example.json
 
 For each signal id Curren stores the publication source and latest accepted `generated_at`. An equal/older projection is counted as `stale_ignored` and cannot roll state backward. The first accepted `public_available_at` schedule is also retained; later projections cannot hide or accelerate an already scheduled public release.
 
-The initial publication hash locks signal id, symbol, side, publication timestamp, entry, stop, and ordered target prices. Lifecycle identities are append-only. The first terminal snapshot records an immutable outcome hash, and its terminal result projection is frozen as well; later attempts to rewrite result/target/PnL context return HTTP `409`.
+The initial publication hash locks signal id, symbol, side, publication timestamp, entry, stop, and ordered target prices. Lifecycle identities are append-only. The first terminal snapshot records an immutable outcome hash, and its terminal result projection (target state, terminal mark, peak R) is frozen as well; later attempts to rewrite it return HTTP `409`. `current_r` is live-only and `null` once a signal is terminal; `realized_r` is the result.
 
 `/v1/results` only exposes terminal rows backed by an immutable outcome record. Track-record statistics are also computed only from those immutable outcome records.
 

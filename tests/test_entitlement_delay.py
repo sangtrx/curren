@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 import httpx
 import pytest
 
@@ -60,17 +62,20 @@ async def test_server_policy_prevents_publisher_from_shortening_public_delay(tmp
         api_keys={"premium-key-123": "premium"},
         public_delay_seconds=1800,
     )
+    # Clocks must be relative to now: a fixed past published_at silently expires the
+    # 1800s floor and turns this regression into a false failure/false green.
+    published_at = datetime.now(UTC) - timedelta(seconds=60)
     payload = {
         "source": "test-runtime",
-        "generated_at": "2026-08-23T15:00:01Z",
+        "generated_at": (published_at + timedelta(seconds=1)).isoformat(),
         "signals": [
             {
                 "id": "crn_sig_delay_floor",
                 "symbol": "ETHUSDT",
                 "side": "long",
                 "status": "active",
-                "published_at": "2026-08-23T15:00:00Z",
-                "public_available_at": "2026-08-23T15:00:00Z",
+                "published_at": published_at.isoformat(),
+                "public_available_at": published_at.isoformat(),
                 "entry": 5000.0,
                 "stop": 4900.0,
                 "targets": [{"price": 5100.0}],
@@ -94,3 +99,9 @@ async def test_server_policy_prevents_publisher_from_shortening_public_delay(tmp
     assert public_direct.status_code == 404
     assert premium_direct.status_code == 200
     assert premium_direct.json()["entry"] == 5000.0
+    floor = datetime.fromisoformat(premium_direct.json()["available_at"])
+    assert floor == published_at  # Premium is realtime
+    public_after_floor = app.state.store.get_signal(
+        "crn_sig_delay_floor", now=published_at + timedelta(seconds=1800)
+    )
+    assert public_after_floor.available_at == published_at + timedelta(seconds=1800)

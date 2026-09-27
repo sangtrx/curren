@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 
 import httpx
 import pytest
@@ -15,7 +16,7 @@ async def test_legacy_terminal_row_without_outcome_record_is_not_exposed_as_proo
 
     # Simulate a terminal row from a pre-outcome-record read model. v0.4 must not
     # present this row through terminal read surfaces as proof-backed data.
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection:
         connection.execute(
             """
             INSERT INTO signals (
