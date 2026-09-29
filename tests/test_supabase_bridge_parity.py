@@ -174,7 +174,7 @@ def _closed(**overrides) -> dict:
     return _signal(**closed)
 
 
-def _batch(generated_minutes: float, *signals: dict, source: str = "private signal runtime") -> dict:
+def _batch(generated_minutes: float, *signals: dict, source: str = "synthetic-runtime") -> dict:
     return {"source": source, "generated_at": _t(generated_minutes), "signals": list(signals)}
 
 
@@ -266,7 +266,7 @@ STEPS: list[tuple[str, dict, int]] = [
     ("at most 16 targets", _batch(83, _signal("crn_sig_x", targets=[{"price": 2550.0 + i} for i in range(17)])), 422),
     ("impossible calendar dates are rejected", _batch(84, _signal("crn_sig_x", published_at="2026-02-30T00:00:00Z")), 422),
     ("year zero is rejected", _batch(85, _signal("crn_sig_x", published_at="0000-01-01T00:00:00Z")), 422),
-    ("a batch without signals is empty", {"source": "private signal runtime", "generated_at": _t(86)}, 200),
+    ("a batch without signals is empty", {"source": "synthetic-runtime", "generated_at": _t(86)}, 200),
 ]
 
 
@@ -329,7 +329,7 @@ async def test_rows_replicated_before_the_migration_are_locked(replica: Replica)
     replica.sql(
         "insert into public.signals (id, source, source_generated_at, symbol, side, status, published_at,"
         " public_available_at, entry, stop, mark, current_r, peak_r, realized_r, closed_at, exit_reason)"
-        f" values ('crn_sig_legacy', 'private signal runtime', '{_t(61)}', 'ETHUSDT', 'long', 'closed', '{_t(0)}',"
+        f" values ('crn_sig_legacy', 'synthetic-runtime', '{_t(61)}', 'ETHUSDT', 'long', 'closed', '{_t(0)}',"
         f" '{_t(30)}', 2500.0, 2450.0, 2500.0, 0.0, 1.2, 0.5, '{_t(60)}', 'stop_after_tp')"
     )
     legacy = _closed(id="crn_sig_legacy")
