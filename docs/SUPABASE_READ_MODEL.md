@@ -1,6 +1,6 @@
 # Curren Supabase landing read model
 
-Status: deployed as a bounded landing-page replica with the v2 publication bridge. The source in this repository is ahead of that deployment (see "Write path"). Private runtime publication remains disabled until the production publisher is explicitly activated and verified.
+Status: the 2026-09-30 read-only operator checkpoint records the bounded landing replica with the v3 publication bridge and parity migration deployed. Function blob: `b5f02d7489c72a097462649c8f81fa9ab5833443`. This is recorded operator evidence, not a fresh production check by the offline tooling lane. Continuous private runtime publication remains disabled.
 
 ## Scope
 
@@ -76,6 +76,11 @@ Current production migrations:
 
 - `20260905111608 create_curren_public_read_model`
 - `20260907202242 harden_curren_public_read_model_v2`
+- `20260927115018` publication ingest parity (source filename: `20260927090000_publication_ingest_parity.sql`)
+
+The parity migration's deployed version differs from its source filename. **Do not use `supabase db push`**:
+it would re-run `add column targets` and fail. Reconcile deployment history through the operator lane
+before future migrations; no schema/history mutation is part of the offline rebaseline tool.
 
 The three base tables have RLS enabled. Anonymous clients have no INSERT/UPDATE/DELETE privileges. Anonymous access is restricted to the landing read views and safe column-level reads needed by their security-invoker definitions. In particular, anonymous clients cannot read `signals.entry`, `signals.stop`, `signals.source`, `signal_targets`, or `signal_lifecycle`.
 
@@ -104,7 +109,9 @@ Authorization: Bearer <publisher secret>
 
 Do not commit or print the publisher secret.
 
-Deployment order. Every step is a production operation that needs explicit operator authorization:
+For a new environment, deployment order is below. The existing production replica already has the
+parity migration and v3 function; do not repeat these steps there. Every step is a production
+operation that needs explicit operator authorization:
 
 1. Capture the live `public` schema into `supabase/migrations/` (for example with `supabase db pull`, which also records the two earlier remote-only versions). Check that `public.signals` still has the columns and privileges `tests/supabase_bridge/baseline.sql` assumes, update the baseline if it differs, and rerun the parity check.
 2. Apply the ingest migration.
@@ -147,4 +154,8 @@ At the 2026-09-08 hardening checkpoint the Supabase schema/RLS/views and Edge Fu
 
 At the 2026-09-18 activation checkpoint a bounded one-shot publication cycle from the private publisher was accepted and verified in the replica (sanitized rows only; public delay/RLS policy intact). Continuous publication was **not** enabled. The replica therefore holds a point-in-time backfill, not evidence of a live feed; active rows age out of `public_live_signals` through the freshness window rather than being presented as live.
 
-An earlier unbounded backfill attempt exceeded the private publisher's read timeout because the v2 Edge Function performed sequential, non-transactional per-signal read/upsert round trips. The current source applies each batch in one transactional database call; it is not deployed yet.
+An earlier unbounded backfill attempt exceeded the private publisher's read timeout because the v2 Edge Function performed sequential, non-transactional per-signal read/upsert round trips. The deployed v3 source applies each batch in one transactional database call. The 2026-09-30 checkpoint still records the legacy 137-row public baseline; private correction and exact affected-ID handoff have not happened.
+
+The bounded correction procedure is in [`PUBLIC_REBASELINE.md`](PUBLIC_REBASELINE.md). It publishes
+once before exact-ID deletion, gates on quarantine equality, preserves full before evidence, and
+requires a second publication plus parity checks. Normal ingest immutability is unchanged.

@@ -1,6 +1,6 @@
 # Curren Public Platform Status
 
-Last reviewed: 2026-09-27
+Last reviewed: 2026-09-30
 
 Current release line: **v0.4.0 (alpha)**.
 
@@ -45,8 +45,9 @@ It is also not the private signal generator (`private signal runtime`), quantita
 - `public_recent_results` exposes terminal closed outcomes independently of active-feed freshness.
 - `public_feed_status` distinguishes `idle`, `fresh`, and `stale` replica state.
 - Anonymous writes are revoked; base tables use RLS; the public views use `security_invoker`.
-- `supabase/functions/curren-api/index.ts` is the source authority for the Supabase publication bridge. The deployed v2 bridge enforces its own publisher Bearer authorization, the 1800-second minimum public delay, source ownership, bounded batch size, future-clock guard, and monotonic replay watermark.
-- The current bridge source plus `supabase/migrations/20260927090000_publication_ingest_parity.sql` apply the canonical read-model rules to the replica: strict batch validation, one transaction per batch, fixed publication identity, terminal outcome/projection lock, and append-only lifecycle. They are **not yet applied or deployed**; the deployed v2 bridge still stores signal rows only and can overwrite a published outcome.
+- `supabase/functions/curren-api/index.ts` is the source authority for the Supabase publication bridge. The 2026-09-30 read-only operator checkpoint records deployed v3 with blob `b5f02d7489c72a097462649c8f81fa9ab5833443`: publisher Bearer authorization, minimum public delay, source ownership, strict batch validation, and monotonic replay watermark.
+- The parity migration is recorded in production as **`20260927115018`**, while its source filename is `20260927090000_publication_ingest_parity.sql`. The operator checkpoint confirms one transaction per batch, fixed publication identity, terminal outcome/projection lock, and append-only lifecycle. **Do not run `supabase db push`** against this mismatched history; it would reapply the existing targets column. Deployment history needs operator reconciliation before future migrations.
+- Offline public rebaseline tooling is documented in [`PUBLIC_REBASELINE.md`](PUBLIC_REBASELINE.md). It requires the exact reviewed private apply manifest and receipt at runtime. No production correction or publication is implied by this source tooling; real affected IDs remain unavailable until private apply.
 - See `docs/SUPABASE_READ_MODEL.md` for the exact landing-replica contract and activation procedure.
 
 ### Clients/integrations
