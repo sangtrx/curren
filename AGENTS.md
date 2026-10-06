@@ -36,8 +36,8 @@ search-index snippets, generated summaries, or historical Linear/SAN records.
 GitHub Issues in `private planning workspace` are the only durable task/workflow authority. Put task status,
 checkpoints, blockers, next actions, user gates, active execution/session/worktree references, writer
 ownership, and acceptance evidence there. GitHub repositories/PRs/commits remain source/artifact
-authority. ChatGPT Web is the primary orchestrator; BigLinux/Alpha-Linux and other hosts are bounded
-execution infrastructure.
+authority. claude.ai project threads are the orchestrator and source writers; BigLinux and other hosts are bounded
+execution infrastructure (Alpha is retired and down).
 
 Linear is retired and read-only historical only. Do not create, update, comment on, checkpoint, or route
 active work through Linear. Historical `SAN-*`/Linear references in dated internal planning or delivery packets
@@ -59,23 +59,23 @@ exchange/account secrets into this public repository.
 
 ## Coding/control path
 
-Normal source work is Web/GitHub-first:
+Normal source work is claude.ai/GitHub-first:
 
 ```text
-ChatGPT Web + GitHub -> candidate branch / exact pushed SHA
+claude.ai project thread + GitHub -> candidate branch / exact pushed SHA
                      -> SentinelX on Big Linux for build/test/runtime evidence
-                     -> Orca/Codex only when another coding/reasoning worker is useful
+                     -> no Orca or Codex worker (retired 5 Oct 2026)
 ```
 
 GitHub is durable source authority. Big Linux keeps a canonical checkout synchronized safely with
 GitHub, fast-forwarding only clean non-ahead `main`; dirty/diverged local work is preserved. Big Linux
-is the canonical Orca worktree/terminal host, not a permanently preferred source writer.
+is an exact-SHA execution and verification host, not a source writer.
 
-When ChatGPT Web needs structural code context before merge, the shared infrastructure may fetch the
+When claude.ai needs structural code context before merge, the shared infrastructure may fetch the
 exact feature-branch SHA into one reusable GitNexus shadow analysis checkout. This does not create a
-second source writer. If source work is explicitly escalated to Orca/Codex, that delegated worktree
-owns the writer lease until it pushes its result, and ChatGPT Web acts as reviewer/supervisor meanwhile.
-Record that live ownership on the current GitHub Issue and clear it when the delegated session ends.
+second source writer. There is no Orca or Codex worker: one claude.ai project thread owns the writer
+lease for an objective until it pushes its result, and a separate thread or fresh-context subagent
+reviews. Record that live ownership on the current GitHub Issue and clear it when the thread ends.
 
 This repository does not use Keros or Kaggle merely because those Curren Research lanes exist; choose
 a non-Big runner only when a task explicitly requires and authorizes it.

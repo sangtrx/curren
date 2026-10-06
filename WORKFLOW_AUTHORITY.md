@@ -5,8 +5,8 @@ Effective after the Linear → GitHub migration, the active workflow model for C
 ```text
 GitHub Issues (`private planning workspace`) = task status, workflow checkpoints, blockers, next actions, user gates, active execution/session/worktree refs, writer ownership and completion evidence
 GitHub repositories / PRs / commits          = source and artifact authority
-ChatGPT Web                                  = primary orchestrator/control plane
-BigLinux / Alpha-Linux / other runners       = bounded execution infrastructure
+claude.ai project threads                   = orchestrator, source writers and reviewers
+BigLinux / other runners                     = bounded execution infrastructure (Alpha is retired)
 Linear                                       = retired read-only historical archive
 ```
 
