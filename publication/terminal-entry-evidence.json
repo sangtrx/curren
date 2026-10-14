@@ -1,0 +1,745 @@
+{
+  "approved_ids_sha256": "dead3ff996b54f48f3080226dc95456c5b833f6fd0d2ca98582bc3c6a3ea4c48",
+  "authority": "woodsbot-system:terminal-entry-evidence",
+  "count": 92,
+  "rows": [
+    {
+      "entry_hit_at": "2026-05-26 14:30:00+00:00",
+      "entry_price": 77557.8,
+      "id": "sig_0192260622b2aa0b65b3e297",
+      "initial_stop_price": 79087.4337105,
+      "published_at": "2026-05-26 14:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-07-28 01:00:00.000000",
+      "entry_price": 45.99,
+      "id": "sig_04b60e82312a8705e059d1ed",
+      "initial_stop_price": 44.41656713,
+      "published_at": "2026-07-28 01:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-28 03:45:00+00:00",
+      "entry_price": 57.688,
+      "id": "sig_07e0fdd8f3198903f19cbb1a",
+      "initial_stop_price": 55.87688524,
+      "published_at": "2026-05-28 03:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-19 03:00:00.000000",
+      "entry_price": 0.7655,
+      "id": "sig_091dfb9bd86a169c7938a8d6",
+      "initial_stop_price": 0.80662177,
+      "published_at": "2026-09-19 03:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-08-23 21:30:00.000000",
+      "entry_price": 7.669,
+      "id": "sig_09cbb8dbe4534e51bcba3a43",
+      "initial_stop_price": 7.88507407,
+      "published_at": "2026-08-23 21:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-12 14:00:00+00:00",
+      "entry_price": 94.68,
+      "id": "sig_0a8741e571ac0cc0e86e3c0c",
+      "initial_stop_price": 93.7332,
+      "published_at": "2026-05-12 14:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-08-08 16:45:00.000000",
+      "entry_price": 0.0892,
+      "id": "sig_0cadb47111eb3d0fb0194ef7",
+      "initial_stop_price": 0.09171321,
+      "published_at": "2026-08-08 16:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-08-20 16:45:00.000000",
+      "entry_price": 72594.5,
+      "id": "sig_0e0b3b975ca729c6ecdc6ffb",
+      "initial_stop_price": 74026.24502625,
+      "published_at": "2026-08-20 16:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-02 19:15:00.000000",
+      "entry_price": 76.08,
+      "id": "sig_0e705dd7f28abff4dd61d358",
+      "initial_stop_price": 73.630224,
+      "published_at": "2026-06-02 19:15:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-10-12 18:30:00.000000",
+      "entry_price": 0.05847,
+      "id": "sig_0f8f91513b89c8020683eb4c",
+      "initial_stop_price": 0.05703748,
+      "published_at": "2026-10-12 18:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-23 08:00:00.000000",
+      "entry_price": 63.58,
+      "id": "sig_125c17bcdde82777d96c70b7",
+      "initial_stop_price": 61.6726,
+      "published_at": "2026-06-23 08:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-08 06:30:00.000000",
+      "entry_price": 78.24,
+      "id": "sig_16456390bef9412a67f45319",
+      "initial_stop_price": 75.720672,
+      "published_at": "2026-07-08 06:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-06 12:00:00+00:00",
+      "entry_price": 82486.4,
+      "id": "sig_1bfde2de5f594f34af0fbbc3",
+      "initial_stop_price": 83311.264,
+      "published_at": "2026-05-06 12:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-14 04:00:00+00:00",
+      "entry_price": 89.89,
+      "id": "sig_1c27da68381f505d6673840b",
+      "initial_stop_price": 88.9911,
+      "published_at": "2026-05-14 04:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-16 04:45:25.000000",
+      "entry_price": 0.08679,
+      "id": "sig_1f305748a0813216e8210c95",
+      "initial_stop_price": 0.08350934,
+      "published_at": "2026-06-16 04:45:25.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-12 11:45:00.000000",
+      "entry_price": 2535.8,
+      "id": "sig_2630c4e0cab6bea772e852f4",
+      "initial_stop_price": 2593.311944,
+      "published_at": "2026-09-12 11:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-08-25 02:30:00.000000",
+      "entry_price": 5.948,
+      "id": "sig_354f340f974c979a0711ab85",
+      "initial_stop_price": 6.15149595,
+      "published_at": "2026-08-25 02:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-30 15:30:00.000000",
+      "entry_price": 0.20658,
+      "id": "sig_387eaac5b04455913f3d056f",
+      "initial_stop_price": 0.20103204,
+      "published_at": "2026-06-30 15:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-17 02:00:00+00:00",
+      "entry_price": 85.71,
+      "id": "sig_38a144d6fbac3cc6cedf6ea5",
+      "initial_stop_price": 84.8529,
+      "published_at": "2026-05-17 02:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-10 18:00:00+00:00",
+      "entry_price": 81446.1,
+      "id": "sig_3af8cab93722376b9d0ccc2f",
+      "initial_stop_price": 82260.561,
+      "published_at": "2026-05-10 18:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-09-13 13:30:00.000000",
+      "entry_price": 0.3418,
+      "id": "sig_3c6f171cd9f4c698231ae139",
+      "initial_stop_price": 0.33081797,
+      "published_at": "2026-09-13 13:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-05 07:00:00.000000",
+      "entry_price": 0.08368,
+      "id": "sig_4b916dfea461c1d268d59ced",
+      "initial_stop_price": 0.0788684,
+      "published_at": "2026-06-05 07:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-02 14:30:00.000000",
+      "entry_price": 0.33687,
+      "id": "sig_4d030e3baa3a371a87866b60",
+      "initial_stop_price": 0.32737869,
+      "published_at": "2026-06-02 14:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-04 15:30:00.000000",
+      "entry_price": 575.8,
+      "id": "sig_4ebe901bfce630641a3762cd",
+      "initial_stop_price": 595.4995575,
+      "published_at": "2026-07-04 15:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-04 02:00:00.000000",
+      "entry_price": 1760.13,
+      "id": "sig_4fedcbd127df31688e177ec2",
+      "initial_stop_price": 1717.6228605,
+      "published_at": "2026-06-04 02:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-17 19:30:38.000000",
+      "entry_price": 64422.6,
+      "id": "sig_50290e778e60de83f40e84e6",
+      "initial_stop_price": 62879.75925825,
+      "published_at": "2026-06-17 19:30:38.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-24 20:45:00+00:00",
+      "entry_price": 84.93,
+      "id": "sig_519bffd8f73c59086a54198f",
+      "initial_stop_price": 82.195254,
+      "published_at": "2026-05-24 20:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-18 18:15:28.000000",
+      "entry_price": 68.42,
+      "id": "sig_5384f1c3f7b08acdac528b16",
+      "initial_stop_price": 66.3509792,
+      "published_at": "2026-06-18 18:15:28.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-04 09:30:00.000000",
+      "entry_price": 67.85,
+      "id": "sig_54be6656960fe767107b442b",
+      "initial_stop_price": 65.197065,
+      "published_at": "2026-06-04 09:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-07 23:00:00.000000",
+      "entry_price": 62928.7,
+      "id": "sig_54de8d33a6eca9b247962966",
+      "initial_stop_price": 64701.7161225,
+      "published_at": "2026-06-07 23:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-21 10:30:00.000000",
+      "entry_price": 0.22481,
+      "id": "sig_555f20c9dcd0f6a840eac4dd",
+      "initial_stop_price": 0.23250131,
+      "published_at": "2026-06-21 10:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-18 18:00:28.000000",
+      "entry_price": 0.027262,
+      "id": "sig_5fc046e90184ff5b09c78673",
+      "initial_stop_price": 0.02626238,
+      "published_at": "2026-06-18 18:00:28.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-02 13:30:00.000000",
+      "entry_price": 0.07853,
+      "id": "sig_613975744561cdf5f46b3a2c",
+      "initial_stop_price": 0.08086627,
+      "published_at": "2026-07-02 13:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-07-12 06:15:00.000000",
+      "entry_price": 6.399,
+      "id": "sig_62620dfd37295e44371c298e",
+      "initial_stop_price": 6.21870818,
+      "published_at": "2026-07-12 06:15:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-08 02:30:00+00:00",
+      "entry_price": 2275.48,
+      "id": "sig_62e17813e4be8d09e2769912",
+      "initial_stop_price": 2252.7252,
+      "published_at": "2026-05-08 02:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-01 02:00:00.000000",
+      "entry_price": 1993.83,
+      "id": "sig_6839d7f343adcaddf3c444da",
+      "initial_stop_price": 1935.36093525,
+      "published_at": "2026-06-01 02:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-24 16:00:00.000000",
+      "entry_price": 0.08129,
+      "id": "sig_69cad1fa1ec8b73d25df022f",
+      "initial_stop_price": 0.07867815,
+      "published_at": "2026-06-24 16:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-23 08:00:00+00:00",
+      "entry_price": 81.98,
+      "id": "sig_6b4ad3d719c0d1a7a2245485",
+      "initial_stop_price": 81.1602,
+      "published_at": "2026-05-23 08:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-08-21 09:00:00.000000",
+      "entry_price": 2.799,
+      "id": "sig_6d2589bc14ce2435a602eb9e",
+      "initial_stop_price": 2.873844,
+      "published_at": "2026-08-21 09:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-09-16 02:00:00.000000",
+      "entry_price": 5.381,
+      "id": "sig_6e2333e51b6aeeeb74613965",
+      "initial_stop_price": 5.22939033,
+      "published_at": "2026-09-16 02:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-23 10:45:00+00:00",
+      "entry_price": 0.3588,
+      "id": "sig_6fe45299549f262b5ba83eac",
+      "initial_stop_price": 0.355212,
+      "published_at": "2026-05-23 10:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-21 15:15:00.000000",
+      "entry_price": 86246.8,
+      "id": "sig_70683b3980fd202b59470552",
+      "initial_stop_price": 87947.802513,
+      "published_at": "2026-09-21 15:15:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-10-08 15:30:00.000000",
+      "entry_price": 84.04,
+      "id": "sig_71cc30094baa55f3e780f773",
+      "initial_stop_price": 81.5188,
+      "published_at": "2026-10-08 15:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-27 17:15:00.000000",
+      "entry_price": 0.10229,
+      "id": "sig_76b2727955d30bd839c74b42",
+      "initial_stop_price": 0.09940798,
+      "published_at": "2026-06-27 17:15:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-05 06:30:00.000000",
+      "entry_price": 61642.0,
+      "id": "sig_7ccd86d8374bb518e60a092e",
+      "initial_stop_price": 60341.03785714,
+      "published_at": "2026-06-05 06:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-02 23:00:00.000000",
+      "entry_price": 1867.44,
+      "id": "sig_7f1af6ff9fda0c117c9c0f38",
+      "initial_stop_price": 1822.341324,
+      "published_at": "2026-06-02 23:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-03 19:30:00.000000",
+      "entry_price": 1816.42,
+      "id": "sig_86a5d0a7ae5f891530f6e4f1",
+      "initial_stop_price": 1770.10129,
+      "published_at": "2026-06-03 19:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-05 06:00:00+00:00",
+      "entry_price": 80923.8,
+      "id": "sig_86a8f604acef732428e95ee0",
+      "initial_stop_price": 81733.038,
+      "published_at": "2026-05-05 06:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-12 04:15:00+00:00",
+      "entry_price": 2305.48,
+      "id": "sig_891d15d98892ab69e3bba61d",
+      "initial_stop_price": 2282.4252,
+      "published_at": "2026-05-12 04:15:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-03 21:00:00.000000",
+      "entry_price": 71.07,
+      "id": "sig_8bea5e779ffb7503ae6e73fa",
+      "initial_stop_price": 68.781546,
+      "published_at": "2026-06-03 21:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-28 10:45:00.000000",
+      "entry_price": 0.05528,
+      "id": "sig_8bf3706c52735bd9e2adf53a",
+      "initial_stop_price": 0.05381729,
+      "published_at": "2026-06-28 10:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-05 04:00:00.000000",
+      "entry_price": 67.04,
+      "id": "sig_8ce5344f3bbd9ec07d79835e",
+      "initial_stop_price": 63.95616,
+      "published_at": "2026-06-05 04:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-21 23:45:00.000000",
+      "entry_price": 72.48,
+      "id": "sig_8f079ecf9326c315ea875b8c",
+      "initial_stop_price": 70.2882048,
+      "published_at": "2026-06-21 23:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-07 03:30:00.000000",
+      "entry_price": 61629.6,
+      "id": "sig_8fc1926575e8c4391219193d",
+      "initial_stop_price": 62771.1034512,
+      "published_at": "2026-06-07 03:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-05 16:00:00.000000",
+      "entry_price": 57.466,
+      "id": "sig_975305369700b17862049b04",
+      "initial_stop_price": 54.269345,
+      "published_at": "2026-06-05 16:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-28 01:30:00+00:00",
+      "entry_price": 2015.65,
+      "id": "sig_9ad3edc09e99a59f06e78719",
+      "initial_stop_price": 1969.935058,
+      "published_at": "2026-05-28 01:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-01 21:15:00.000000",
+      "entry_price": 60424.2,
+      "id": "sig_9e39db08f7df33497e357965",
+      "initial_stop_price": 61615.9162845,
+      "published_at": "2026-07-01 21:15:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-07-03 13:45:00.000000",
+      "entry_price": 1748.28,
+      "id": "sig_9e45d9f37cce2310889c480a",
+      "initial_stop_price": 1790.500962,
+      "published_at": "2026-07-03 13:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-18 00:00:00+00:00",
+      "entry_price": 85.18,
+      "id": "sig_a22b1da8f5de39c4faf0e731",
+      "initial_stop_price": 84.3282,
+      "published_at": "2026-05-18 00:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-22 22:30:00+00:00",
+      "entry_price": 75759.1,
+      "id": "sig_a599af6805605de0b5ab59fc",
+      "initial_stop_price": 75001.509,
+      "published_at": "2026-05-22 22:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-21 08:30:00.000000",
+      "entry_price": 1939.49,
+      "id": "sig_aa5e51bfc01dff41aee77088",
+      "initial_stop_price": 1980.21929,
+      "published_at": "2026-07-21 08:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-21 04:00:00+00:00",
+      "entry_price": 86.81,
+      "id": "sig_aacee6c4d75d380e2ea11288",
+      "initial_stop_price": 87.6781,
+      "published_at": "2026-05-21 04:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-04 16:45:00+00:00",
+      "entry_price": 80228.5,
+      "id": "sig_ad4898bf8798269105d78b4c",
+      "initial_stop_price": 81030.785,
+      "published_at": "2026-05-04 16:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-08-19 20:00:00.000000",
+      "entry_price": 0.6202,
+      "id": "sig_b1bccc570bd7a79130590c83",
+      "initial_stop_price": 0.64012703,
+      "published_at": "2026-08-19 20:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-27 03:00:00.000000",
+      "entry_price": 0.018855,
+      "id": "sig_b632bc2c1089af5862e79892",
+      "initial_stop_price": 0.01832376,
+      "published_at": "2026-06-27 03:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-16 04:45:25.000000",
+      "entry_price": 1762.35,
+      "id": "sig_b6907e621857094907ef8c92",
+      "initial_stop_price": 1725.34065,
+      "published_at": "2026-06-16 04:45:25.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-08 06:30:00.000000",
+      "entry_price": 0.09902,
+      "id": "sig_b711c1a74cd02adcd0b16057",
+      "initial_stop_price": 0.09623011,
+      "published_at": "2026-07-08 06:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-20 07:45:00.000000",
+      "entry_price": 0.05513,
+      "id": "sig_bb9c8dafbfa134e8c1e61879",
+      "initial_stop_price": 0.05357671,
+      "published_at": "2026-09-20 07:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-07 05:15:00.000000",
+      "entry_price": 582.8,
+      "id": "sig_bcbd4f5813668f90be06e493",
+      "initial_stop_price": 599.22039,
+      "published_at": "2026-06-07 05:15:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-28 01:30:00+00:00",
+      "entry_price": 82.11,
+      "id": "sig_bf0dae7d369233a46533c570",
+      "initial_stop_price": 79.6269936,
+      "published_at": "2026-05-28 01:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-04 10:00:00.000000",
+      "entry_price": 596.3,
+      "id": "sig_c2088d45605b184e1867a188",
+      "initial_stop_price": 573.75986,
+      "published_at": "2026-06-04 10:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-13 21:30:00.000000",
+      "entry_price": 62.935,
+      "id": "sig_c4201837c7aaf8c80bc00b4e",
+      "initial_stop_price": 60.95915568,
+      "published_at": "2026-07-13 21:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-13 16:00:00+00:00",
+      "entry_price": 2235.39,
+      "id": "sig_c54712302c3108bf9bd94c8f",
+      "initial_stop_price": 2213.0361,
+      "published_at": "2026-05-13 16:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-07-17 13:45:00.000000",
+      "entry_price": 0.00316,
+      "id": "sig_ce577eb16047a3f602823c8e",
+      "initial_stop_price": 0.00307097,
+      "published_at": "2026-07-17 13:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-26 14:30:00.000000",
+      "entry_price": 4.628,
+      "id": "sig_d07f3daa96aba2c796e978be",
+      "initial_stop_price": 4.76299357,
+      "published_at": "2026-06-26 14:30:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-06-01 14:00:00.000000",
+      "entry_price": 79.77,
+      "id": "sig_d4a5a4ace805adfc075928fc",
+      "initial_stop_price": 76.10058,
+      "published_at": "2026-06-01 14:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-12 14:00:00+00:00",
+      "entry_price": 2270.76,
+      "id": "sig_d74272156815e9b9fbcbd03a",
+      "initial_stop_price": 2248.0524,
+      "published_at": "2026-05-12 14:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-03 04:00:00.000000",
+      "entry_price": 72.81,
+      "id": "sig_d75281cc75917afceb5fe1cf",
+      "initial_stop_price": 70.465518,
+      "published_at": "2026-06-03 04:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-02 09:30:00.000000",
+      "entry_price": 2387.33,
+      "id": "sig_dd5621cf876656888c20447e",
+      "initial_stop_price": 2317.32154775,
+      "published_at": "2026-09-02 09:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-01 12:00:48.693000+00:00",
+      "entry_price": 77420.1,
+      "id": "sig_e1b149794b917e077410ce0c",
+      "initial_stop_price": 78194.301,
+      "published_at": "2026-05-01 12:00:48.693000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-09-15 14:45:00.000000",
+      "entry_price": 51.96,
+      "id": "sig_e3355526b51f8a1fc6f7cd9e",
+      "initial_stop_price": 50.496027,
+      "published_at": "2026-09-15 14:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-30 12:15:00.000000",
+      "entry_price": 0.07397,
+      "id": "sig_e70b9728bc172e5c2b415a11",
+      "initial_stop_price": 0.07201275,
+      "published_at": "2026-06-30 12:15:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-21 09:45:00.000000",
+      "entry_price": 784.7,
+      "id": "sig_e7d163222abbac7ad7a398a8",
+      "initial_stop_price": 806.8089225,
+      "published_at": "2026-09-21 09:45:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-09-14 17:00:00.000000",
+      "entry_price": 7.546,
+      "id": "sig_e814e9ee6bf48e775a098ca3",
+      "initial_stop_price": 7.75860855,
+      "published_at": "2026-09-14 17:00:00.000000",
+      "side": "short"
+    },
+    {
+      "entry_hit_at": "2026-05-22 20:00:00+00:00",
+      "entry_price": 2067.49,
+      "id": "sig_e8a5fea6e624e2791d6eb56f",
+      "initial_stop_price": 2046.8151,
+      "published_at": "2026-05-22 20:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-09-15 14:00:00.000000",
+      "entry_price": 76588.3,
+      "id": "sig_e8d73834b45cf2a3d76c6183",
+      "initial_stop_price": 74865.7525447,
+      "published_at": "2026-09-15 14:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-16 09:30:00+00:00",
+      "entry_price": 85.91,
+      "id": "sig_ea040cef8954c0634398b80e",
+      "initial_stop_price": 85.0509,
+      "published_at": "2026-05-16 09:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-15 13:45:00+00:00",
+      "entry_price": 2223.1,
+      "id": "sig_eb6dd18066fa2e97dc072d09",
+      "initial_stop_price": 2200.869,
+      "published_at": "2026-05-15 13:45:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-10-12 18:30:00.000000",
+      "entry_price": 0.004076,
+      "id": "sig_ef93058277d9b3d2fcad25ec",
+      "initial_stop_price": 0.00397614,
+      "published_at": "2026-10-12 18:30:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-05-25 23:00:00+00:00",
+      "entry_price": 2102.75,
+      "id": "sig_efdd3915b4315055a36187cf",
+      "initial_stop_price": 2055.05963,
+      "published_at": "2026-05-25 23:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-10-13 00:00:00.000000",
+      "entry_price": 10.139,
+      "id": "sig_f255c7aa9007f15b3cdd8854",
+      "initial_stop_price": 9.81323393,
+      "published_at": "2026-10-13 00:00:00.000000",
+      "side": "long"
+    },
+    {
+      "entry_hit_at": "2026-06-20 22:15:00.000000",
+      "entry_price": 13.742,
+      "id": "sig_fc1e82d2d4dd5f54f74bae33",
+      "initial_stop_price": 14.22486857,
+      "published_at": "2026-06-20 22:15:00.000000",
+      "side": "short"
+    }
+  ],
+  "schema": "curren.public.terminal-entry-evidence.v1",
+  "updated_at": "2026-10-14T03:19:25.621141+00:00"
+}
