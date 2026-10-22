@@ -1,7 +1,7 @@
 {
   "approved_ids_sha256": "6f0ec4193c9d69a3b76dfa4c164491371d1d9f9579c67fb0f5c7325a47f352a9",
   "authority": "woodsbot-system:terminal-entry-evidence",
-  "count": 96,
+  "count": 97,
   "rows": [
     {
       "entry_hit_at": "2026-05-26 14:30:00+00:00",
@@ -636,6 +636,14 @@
       "side": "short"
     },
     {
+      "entry_hit_at": "2026-10-22 08:30:00.000000",
+      "entry_price": 2.778,
+      "id": "sig_d28f500355bb3a0798c8decd",
+      "initial_stop_price": 2.709939,
+      "published_at": "2026-10-22 08:30:00.000000",
+      "side": "long"
+    },
+    {
       "entry_hit_at": "2026-06-01 14:00:00.000000",
       "entry_price": 79.77,
       "id": "sig_d4a5a4ace805adfc075928fc",
@@ -773,5 +781,5 @@
     }
   ],
   "schema": "curren.public.terminal-entry-evidence.v1",
-  "updated_at": "2026-10-22T08:48:31.575968+00:00"
+  "updated_at": "2026-10-22T17:12:42.323387+00:00"
 }
