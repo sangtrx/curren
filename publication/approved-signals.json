@@ -1,6 +1,6 @@
 {
   "authority": "woodsbot-system:telegram-initial-delivery+historical-legacy",
-  "count": 113,
+  "count": 115,
   "ids": [
     "sig_0192260622b2aa0b65b3e297",
     "sig_01afb540fa7b4bf1d0dfd9f1",
@@ -46,12 +46,14 @@
     "sig_67dad0488876d28c0b73a77e",
     "sig_6839d7f343adcaddf3c444da",
     "sig_69cad1fa1ec8b73d25df022f",
+    "sig_6acccca9c76e58b436618cc4",
     "sig_6b4ad3d719c0d1a7a2245485",
     "sig_6d2589bc14ce2435a602eb9e",
     "sig_6e2333e51b6aeeeb74613965",
     "sig_6fe45299549f262b5ba83eac",
     "sig_70683b3980fd202b59470552",
     "sig_71cc30094baa55f3e780f773",
+    "sig_746b4049a205826dda65beb1",
     "sig_76b2727955d30bd839c74b42",
     "sig_7ccd86d8374bb518e60a092e",
     "sig_7e7ea6017099cc696c3aa68f",
@@ -116,11 +118,11 @@
     "sig_f8637af7ce4a973bba7bf4f6",
     "sig_fc1e82d2d4dd5f54f74bae33"
   ],
-  "ids_sha256": "6f0ec4193c9d69a3b76dfa4c164491371d1d9f9579c67fb0f5c7325a47f352a9",
+  "ids_sha256": "e0b26ddcfcfa10ac1679c6aa5f81b3abc1a211a248ec038da2a0aed5e713f75b",
   "legacy_mapping_only_triplets": 0,
-  "provider_proved_triplets": 115,
+  "provider_proved_triplets": 117,
   "schema": "curren.public.accepted-telegram-signals.v1",
-  "source_delivered_count": 115,
+  "source_delivered_count": 117,
   "source_quarantined_count": 2,
-  "updated_at": "2026-10-22T08:48:31.573590+00:00"
+  "updated_at": "2026-10-29T09:54:27.954461+00:00"
 }
