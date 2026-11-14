@@ -1,6 +1,6 @@
 {
   "authority": "woodsbot-system:telegram-initial-delivery+historical-legacy",
-  "count": 127,
+  "count": 128,
   "ids": [
     "sig_0192260622b2aa0b65b3e297",
     "sig_01afb540fa7b4bf1d0dfd9f1",
@@ -93,6 +93,7 @@
     "sig_b632bc2c1089af5862e79892",
     "sig_b6907e621857094907ef8c92",
     "sig_b711c1a74cd02adcd0b16057",
+    "sig_b781e0f0c2c530a71b697270",
     "sig_bb9c8dafbfa134e8c1e61879",
     "sig_bcbd4f5813668f90be06e493",
     "sig_bf0dae7d369233a46533c570",
@@ -130,11 +131,11 @@
     "sig_fc1e82d2d4dd5f54f74bae33",
     "sig_fc351b2075eb4257211aea6b"
   ],
-  "ids_sha256": "49a671708eae307173d693e6a87352f450b35f32324132485dbe7ae122d4fb81",
+  "ids_sha256": "70748d622da4d92878cde14aa29ca4b3db5cc89f3fc604b8313924b04859b39b",
   "legacy_mapping_only_triplets": 0,
-  "provider_proved_triplets": 129,
+  "provider_proved_triplets": 130,
   "schema": "curren.public.accepted-telegram-signals.v1",
-  "source_delivered_count": 129,
+  "source_delivered_count": 130,
   "source_quarantined_count": 2,
-  "updated_at": "2026-11-14T21:15:15.225150+00:00"
+  "updated_at": "2026-11-14T22:45:14.367493+00:00"
 }
